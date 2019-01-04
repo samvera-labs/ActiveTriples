@@ -1,8 +1,57 @@
-before_script:
-  - ruby -v
-  - gem install bundler --no-ri --no-rdoc
-  - bundle install --jobs $(nproc)  "${FLAGS[@]}"
-
-rspec:
+.rspec:
   script:
     - bundle exec rspec
+
+.jruby:
+  extends: .rspec
+  before_script:
+    - apk add git
+    - ruby -v
+    - bundle install --jobs $(nproc)  "${FLAGS[@]}"
+
+before_script:
+  - ruby -v
+  - bundle install --jobs $(nproc)  "${FLAGS[@]}"
+
+stages:
+  - test
+
+ruby-2-2:
+  image: ruby:2.2
+  extends: .rspec
+  stage: test
+
+ruby-2-3:
+  image: ruby:2.3
+  extends: .rspec
+  stage: test
+
+ruby-2-4:
+  image: ruby:2.4
+  extends: .rspec
+  stage: test
+
+ruby-2-5:
+  image: ruby:2.5
+  extends: .rspec
+  stage: test
+
+ruby-2-6:
+  image: ruby:2.6
+  extends: .rspec
+  stage: test
+
+ruby-latest:
+  image: ruby:latest
+  extends: .rspec
+  stage: test
+
+jruby-9-2-5:
+  image: jruby:9.2.5-alpine
+  extends: .jruby
+  stage: test
+
+jruby-9:
+  image: jruby:9-alpine
+  extends: .jruby
+  stage: test
