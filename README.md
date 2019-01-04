@@ -2,7 +2,7 @@ Description
 -----------
 
 [![Build Status](https://travis-ci.org/ActiveTriples/ActiveTriples.png?branch=develop)](https://travis-ci.org/ActiveTriples/ActiveTriples)
-[![Coverage Status](https://coveralls.io/repos/ActiveTriples/ActiveTriples/badge.svg?branch=develop)](https://coveralls.io/r/ActiveTriples/ActiveTriples?branch=develop)
+[![Coverage Report](https://gitlab.com/no_reply/ActiveTriples/badges/develop/coverage.svg)](https://gitlab.com/no_reply/ActiveTriples/commits/develop)
 [![Gem Version](https://badge.fury.io/rb/active-triples.svg)](http://badge.fury.io/rb/active-triples)
 
 An ActiveModel-like interface for RDF data. Models graphs as RDFSources with property/attribute configuration, accessors, and other methods to support Linked Data in a Ruby/Rails enviornment. See [RDF Concepts and Abstract Syntax](http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/#change-over-time) for an informal definition of an RDF Source.
@@ -27,9 +27,9 @@ require 'rdf/vocab'
 
 class Thing
   include  ActiveTriples::RDFSource
-  
+
   configure type: RDF::OWL.Thing, base_uri: 'http://example.org/things#'
-  
+
   property :title,       predicate: RDF::Vocab::DC.title
   property :description, predicate: RDF::Vocab::DC.description
 end
@@ -48,10 +48,10 @@ Thing.property :creator, predicate: RDF::Vocab::DC.creator, class_name: 'Person'
 
 class Person
   include  ActiveTriples::RDFSource
-  
+
   configure type:     RDF::Vocab::FOAF.Person,
             base_uri: 'http://example.org/people#'
-            
+
   property :name, predicate: RDF::Vocab::FOAF.name
 end
 
@@ -171,7 +171,7 @@ ActiveTriples::Repositories.add_repository :people,  RDF::Repository.new
 
 class Person
   include  ActiveTriples::RDFSource
-  
+
   configure type:       RDF::Vocab::FOAF.Person,
             base_uri:   'http://example.org/people#',
             repository: :people
@@ -184,7 +184,7 @@ class Thing
   configure type:       RDF::OWL.Thing,
             base_uri:   'http://example.org/things#',
             repository: :default
-            
+
   property :title,       predicate: RDF::Vocab::DC.title
   property :description, predicate: RDF::Vocab::DC.description
   property :creator,     predicate: RDF::Vocab::DC.creator, class_name: 'Person'
