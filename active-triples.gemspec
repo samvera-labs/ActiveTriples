@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = ActiveTriples::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Tom Johnson", "Trey Terrell"]
-  s.homepage    = 'https://github.com/ActiveTriples/ActiveTriples'
+  s.homepage    = 'https://gitlab.com/no_reply/ActiveTriples'
   s.email       = 'tom@curationexperts.com'
   s.summary     = %q{RDF graphs in ActiveModel wrappers.}
   s.description = %q{ActiveTriples provides tools for modeling RDF as discrete resources.}
