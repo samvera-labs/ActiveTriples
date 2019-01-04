@@ -1,7 +1,7 @@
 Description
 -----------
 
-[![Build Status](https://travis-ci.org/ActiveTriples/ActiveTriples.png?branch=develop)](https://travis-ci.org/ActiveTriples/ActiveTriples)
+[![Pipeline Status](https://gitlab.com/no_reply/ActiveTriples/badges/develop/pipeline.svg)](https://gitlab.com/no_reply/ActiveTriples/commits/develop)
 [![Coverage Report](https://gitlab.com/no_reply/ActiveTriples/badges/develop/coverage.svg)](https://gitlab.com/no_reply/ActiveTriples/commits/develop)
 [![Gem Version](https://badge.fury.io/rb/active-triples.svg)](http://badge.fury.io/rb/active-triples)
 
