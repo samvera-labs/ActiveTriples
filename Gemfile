@@ -6,6 +6,7 @@ gem 'pry-byebug' unless ENV["CI"]
 
 group :test do
   gem 'rdf-spec', github: 'ruby-rdf/rdf-spec', branch: 'develop'
+  gem 'simplecov', require: false
 end
 
 Encoding.default_external = Encoding::UTF_8
