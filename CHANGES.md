@@ -1,3 +1,8 @@
+1.1.1
+----
+  - Major performance improvements due to a minor change in how
+    properties are resolved.
+
 1.1.0
 ----
   - Add support for RDF.rb 3.0
