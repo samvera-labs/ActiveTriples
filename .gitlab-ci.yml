@@ -16,27 +16,22 @@ before_script:
 stages:
   - test
 
-ruby-2-2:
-  image: ruby:2.2
-  extends: .rspec
-  stage: test
-
-ruby-2-3:
-  image: ruby:2.3
-  extends: .rspec
-  stage: test
-
 ruby-2-4:
   image: ruby:2.4
   extends: .rspec
   stage: test
 
 ruby-2-5:
-  image: ruby:2.5
+  image: ruby:2.4
   extends: .rspec
   stage: test
 
 ruby-2-6:
+  image: ruby:2.5
+  extends: .rspec
+  stage: test
+
+ruby-2-7:
   image: ruby:2.6
   extends: .rspec
   stage: test
@@ -44,11 +39,6 @@ ruby-2-6:
 ruby-latest:
   image: ruby:latest
   extends: .rspec
-  stage: test
-
-jruby-9-2-5:
-  image: jruby:9.2.5-alpine
-  extends: .jruby
   stage: test
 
 jruby-9:
