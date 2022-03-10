@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module ActiveTriples
   require_relative 'configuration/item'
   require_relative 'configuration/merge_item'
@@ -12,8 +13,8 @@ module ActiveTriples
     ##
     # @param item_factory [ItemFactory]
     # @param [Hash] options the configuration options.
-    def initialize(item_factory: ItemFactory.new, **options)
-      @item_factory = item_factory
+    def initialize(item_factory: nil, **options)
+      @item_factory = item_factory || ItemFactory.new
       @inner_hash   = Hash[options.to_a]
     end
 
@@ -72,9 +73,9 @@ module ActiveTriples
     end
 
     private
-    
-    CONFIG_OPTIONS = [:base_uri, :rdf_label, :type, :repository].freeze
-    
+
+    CONFIG_OPTIONS = %i[base_uri rdf_label type repository].freeze
+
     attr_reader :item_factory
 
     def valid_config_options

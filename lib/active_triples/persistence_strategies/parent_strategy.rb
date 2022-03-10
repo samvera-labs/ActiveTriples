@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'active_triples/util/buffered_transaction'
 
 module ActiveTriples
@@ -28,8 +29,8 @@ module ActiveTriples
     def graph=(graph)
       final_parent.insert(graph || source.to_a)
       @graph = BufferedTransaction.begin(parent,
-                                         mutable:   true,
-                                         subject:   source.to_term)
+                                         mutable: true,
+                                         subject: source.to_term)
     end
 
     ##
@@ -40,8 +41,8 @@ module ActiveTriples
     # @see ActiveTriples::ExtendedBoundedDescription
     def graph
       @graph ||= BufferedTransaction.begin(parent,
-                                           mutable:   true,
-                                           subject:   source.to_term)
+                                           mutable: true,
+                                           subject: source.to_term)
     end
 
     ##
@@ -163,8 +164,8 @@ module ActiveTriples
           loop do
             yield current
 
-            break unless (current.persistence_strategy.respond_to?(:parent) &&
-                          current.persistence_strategy.parent)
+            break unless current.persistence_strategy.respond_to?(:parent) &&
+                         current.persistence_strategy.parent
             break if current.persistence_strategy.parent == current
 
             current = current.persistence_strategy.parent

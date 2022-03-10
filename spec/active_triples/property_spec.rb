@@ -1,20 +1,21 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 describe ActiveTriples::Property do
   subject { described_class.new(options) }
   let(:options) do
     {
-      :name => :title,
-      :predicate => RDF::Vocab::DC.title,
-      :class_name => "Test"
+      name: :title,
+      predicate: RDF::Vocab::DC.title,
+      class_name: 'Test'
     }
   end
 
-  it "should create accessors for each passed option" do
+  it 'should create accessors for each passed option' do
     expect(subject.name).to eq :title
     expect(subject.predicate).to eq RDF::Vocab::DC.title
-    expect(subject.class_name).to eq "Test"
+    expect(subject.class_name).to eq 'Test'
   end
 
   it 'should hold a block' do
@@ -27,12 +28,12 @@ describe ActiveTriples::Property do
     property.config.call
   end
 
-  describe "#to_h" do
+  describe '#to_h' do
     it "should not return the property's name" do
-      expect(subject.to_h).to eq (
+      expect(subject.to_h).to eq(
         {
-          :predicate => RDF::Vocab::DC.title,
-          :class_name => "Test"
+          predicate: RDF::Vocab::DC.title,
+          class_name: 'Test'
         }
       )
     end
@@ -44,10 +45,10 @@ describe ActiveTriples::Property do
 
   context '#cast' do
     it 'has a default of false' do
-      expect(described_class.new(:name => :title).cast).to eq(false)
+      expect(described_class.new(name: :title).cast).to eq(false)
     end
     it 'allows for the default to be overridden' do
-      expect(described_class.new(:name => :title, :cast => true).cast).to eq(true)
+      expect(described_class.new(name: :title, cast: true).cast).to eq(true)
     end
   end
 end

@@ -1,8 +1,10 @@
 # frozen_string_literal: true
+
 require 'active_model'
 require 'active_support/core_ext/hash'
 require 'active_support/core_ext/array/wrap'
 require 'set'
+require 'json/ld'
 
 module ActiveTriples
   ##
@@ -110,7 +112,7 @@ module ActiveTriples
     # @see RDF::Graph
     # @todo move this logic out to a Builder?
     def initialize(*args, &block)
-      @observers   = Set.new
+      @observers = Set.new
 
       resource_uri = args.shift unless args.first.is_a?(Hash)
       @rdf_subject = get_uri(resource_uri) if resource_uri
@@ -245,8 +247,13 @@ module ActiveTriples
       if args.first == :jsonld && respond_to?(:jsonld_context)
         args << {} unless args.last.is_a?(Hash)
         args.last[:context] ||= jsonld_context
+
+        writer = args.shift
+        options = args.reduce(:merge)
+        super(writer, **options)
+      else
+        super(*args)
       end
-      super
     end
 
     ##
@@ -324,7 +331,7 @@ module ActiveTriples
     #
     # @note Without a custom #inspect, we inherit from RDF::Value.
     def inspect
-      sprintf("#<%s:%#0x ID:%s>", self.class.to_s, self.object_id, self.to_base)
+      format('#<%s:%#0x ID:%s>', self.class.to_s, object_id, to_base)
     end
 
     ##
@@ -355,9 +362,10 @@ module ActiveTriples
     end
 
     def type=(type)
-      raise(ArgumentError,
-            "Type must be an RDF::URI. Got: #{type.class}, #{type}") unless
-        type.is_a? RDF::URI
+      unless type.is_a? RDF::URI
+        raise(ArgumentError,
+              "Type must be an RDF::URI. Got: #{type.class}, #{type}")
+      end
 
       update(RDF::Statement.new(rdf_subject, RDF.type, type))
     end
@@ -398,16 +406,19 @@ module ActiveTriples
     # @yieldparam [ActiveTriples::RDFSource] resource  self
     #
     # @return [ActiveTriples::RDFSource] self
-    def fetch(*args, &_block)
+    def fetch(**options, &_block)
       begin
-        load(rdf_subject, *args)
-      rescue => e
+        graph.load(rdf_subject, **options)
+      rescue StandardError => error
+
         if block_given?
           yield(self)
         else
-          raise "#{self} is a blank node; " \
-                'Cannot fetch a resource without a URI' if node?
-          raise e
+          if node?
+            raise "#{self} is a blank node; " \
+                  'Cannot fetch a resource without a URI'
+          end
+          raise error
         end
       end
       self
@@ -626,8 +637,19 @@ module ActiveTriples
     # @return [void]
     def notify_observers(property)
       return if @observers.empty?
+
       values = get_values(property).to_a
       @observers.each { |o| o.notify(property, values) }
+    end
+
+    # Determines whether or not a term is referenced by this source
+    # Override for ensuring that this supports RDF::Enumerable
+    # @todo Determine why this could work with `include(RDF::Enumerable)`
+    #
+    # @param [RDF::Term] term
+    # @return [Boolean]
+    def has_term?(term)
+      terms.include?(term)
     end
 
     private
@@ -641,7 +663,7 @@ module ActiveTriples
     # @param [RDF::Term] new_subject
     # @return [void]
     def rewrite_statement_uris(old_subject, new_subject)
-      graph.query(subject: old_subject).each do |st|
+      graph.query([old_subject, nil, nil]).each do |st|
         graph.delete(st)
 
         st.subject = new_subject
@@ -649,7 +671,7 @@ module ActiveTriples
         graph.insert(st)
       end
 
-      graph.query(object: old_subject).each do |st|
+      graph.query([nil, nil, old_subject]).each do |st|
         graph.delete(st)
 
         st.object = new_subject

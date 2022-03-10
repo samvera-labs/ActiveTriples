@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-shared_examples_for "an ActiveModel" do
+
+shared_examples_for 'an ActiveModel' do
   subject { am_lint_class.new }
 
   describe '#to_key' do
@@ -8,7 +9,9 @@ shared_examples_for "an ActiveModel" do
     end
 
     it 'should return an array of keys ' do
-      def subject.persisted?() false end
+      def subject.persisted?
+        false
+      end
       expect(subject.to_key).to contain_exactly(subject.id)
     end
   end
@@ -19,7 +22,9 @@ shared_examples_for "an ActiveModel" do
     end
 
     it 'should return nil when #persisted? is false ' do
-      def subject.persisted?() false end
+      def subject.persisted?
+        false
+      end
       expect(subject.to_param).to eq nil
     end
   end
@@ -76,7 +81,7 @@ shared_examples_for "an ActiveModel" do
 
   private
 
-    def match_boolean(result)
-      result == true || result == false
-    end
+  def match_boolean(result)
+    result == true || result == false
+  end
 end

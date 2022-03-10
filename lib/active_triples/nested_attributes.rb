@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'active_support'
 require 'active_support/concern'
 require 'active_support/core_ext/class'
@@ -8,13 +9,13 @@ module ActiveTriples
     extend ActiveSupport::Concern
 
     included do
-      class_attribute :nested_attributes_options, :instance_writer => false
+      class_attribute :nested_attributes_options, instance_writer: false
       self.nested_attributes_options = {}
     end
 
     private
 
-    UNASSIGNABLE_KEYS = %w(_destroy )
+    UNASSIGNABLE_KEYS = %w[_destroy].freeze
 
     # @param [Symbol] association_name
     # @param [Hash, Array] attributes_collection
@@ -37,23 +38,23 @@ module ActiveTriples
     #     { name: 'John' },
     #     { id: '2', _destroy: true }
     #   ])
-    def assign_nested_attributes_for_collection_association(association_name, 
+    def assign_nested_attributes_for_collection_association(association_name,
                                                             attributes_collection)
-      options = self.nested_attributes_options[association_name]
+      options = nested_attributes_options[association_name]
 
       # TODO
-      #check_record_limit!(options[:limit], attributes_collection)
+      # check_record_limit!(options[:limit], attributes_collection)
 
-      attributes_collection = attributes_collection.values if 
+      attributes_collection = attributes_collection.values if
         attributes_collection.is_a?(Hash)
 
-      association = self.send(association_name)
+      association = send(association_name)
 
       attributes_collection.each do |attributes|
         attributes = attributes.with_indifferent_access
 
-        if !call_reject_if(association_name, attributes)
-          if attributes['id'] && 
+        unless call_reject_if(association_name, attributes)
+          if attributes['id'] &&
              existing_record = association.detect { |record| record.rdf_subject.to_s == attributes['id'].to_s }
             assign_to_or_mark_for_destruction(existing_record, attributes, options[:allow_destroy])
           else
@@ -68,13 +69,14 @@ module ActiveTriples
     def assign_to_or_mark_for_destruction(record, attributes, allow_destroy)
       record.attributes = attributes.except(*UNASSIGNABLE_KEYS)
 
-      record.mark_for_destruction if has_destroy_flag?(attributes) && 
+      record.mark_for_destruction if has_destroy_flag?(attributes) &&
                                      allow_destroy
     end
 
     def call_reject_if(association_name, attributes)
       return false if has_destroy_flag?(attributes)
-      case callback = self.nested_attributes_options[association_name][:reject_if]
+
+      case callback = nested_attributes_options[association_name][:reject_if]
       when Symbol
         method(callback).arity == 0 ? send(callback) : send(callback, attributes)
       when Proc
@@ -84,12 +86,12 @@ module ActiveTriples
 
     # Determines if a hash contains a truthy _destroy key.
     def has_destroy_flag?(hash)
-      ["1", "true"].include?(hash['_destroy'].to_s)
+      %w[1 true].include?(hash['_destroy'].to_s)
     end
 
     module ClassMethods
-      def accepts_nested_attributes_for *attr_names
-        options = { :allow_destroy => false, :update_only => false }
+      def accepts_nested_attributes_for(*attr_names)
+        options = { allow_destroy: false, update_only: false }
         options.update(attr_names.extract_options!)
         options.assert_valid_keys(:allow_destroy, :reject_if, :limit, :update_only)
         options[:reject_if] = REJECT_ALL_BLANK_PROC if options[:reject_if] == :all_blank
@@ -126,9 +128,8 @@ module ActiveTriples
               ## in lieu of autosave_association_callbacks just save all of em.
               send(:#{association_name}).each {|obj| obj.marked_for_destruction? ? obj.destroy : nil}
             end
-          eoruby
+        eoruby
       end
     end
   end
 end
-
