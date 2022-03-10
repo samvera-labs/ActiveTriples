@@ -30,6 +30,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rdf-spec', '~> 3.2', '< 4.0'
   s.add_development_dependency 'rdf-turtle', '~> 3.2', '< 4.0'
   s.add_development_dependency 'rspec',       '~> 3.6'
+  s.add_development_dependency 'rspec_junit_formatter'
   s.add_development_dependency 'webmock',     '~> 3.0'
   s.add_development_dependency 'yard',        '~> 0.9'
 

@@ -743,16 +743,19 @@ describe ActiveTriples::RDFSource do
 
         it { is_expected.to be_valid }
 
-        context 'and has invaild statements' do
+        context 'and has invalid statements' do
           before { subject << invalid_statement }
 
           it { is_expected.to be_invalid }
 
           it 'has errors' do
-            expect { subject.valid? }
-              .to change { subject.errors.messages }
-              .from({})
-              .to(include(base: ['The underlying graph must be valid']))
+            subject.valid?
+
+            error_messages = subject.errors.messages
+            expect(error_messages).to(include(:base))
+            values = error_messages[:base]
+            expect(values).not_to be_empty
+            expect(values.first.to_s).to eq("The underlying graph must be valid")
           end
         end
       end
