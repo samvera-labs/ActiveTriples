@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 autoload :DummyResourceA, 'integration/dummies/dummy_resource_a'
 autoload :DummyResourceB, 'integration/dummies/dummy_resource_b'
@@ -8,14 +10,14 @@ describe 'reciprocal properties' do
       ActiveTriples::Repositories.add_repository :default, RDF::Repository.new
     end
 
-    let (:a) do
+    let(:a) do
       # a = DummyResourceA.new(RDF::URI('http://example.com/a'))
       a = DummyResourceA.new
       a.label = 'resource A'
       a
     end
 
-    let (:b) do
+    let(:b) do
       # b = DummyResourceB.new(RDF::URI('http://example.com/b'))
       b = DummyResourceB.new
       b.label = 'resource B'
@@ -39,13 +41,13 @@ describe 'reciprocal properties' do
   end
 
   context 'when using parent_strategy for some' do
-    let (:a) do
+    let(:a) do
       d = DummyResourceA.new(RDF::URI('http://example.com/a'))
       d.label = 'resource A'
       d
     end
 
-    let (:b) do
+    let(:b) do
       p = DummyResourceB.new(RDF::URI('http://example.com/b'), a)
       p.label = 'resource B'
       p

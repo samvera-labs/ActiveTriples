@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module ActiveTriples
   ##
   # Persistence strategy for projecting `RDFSource` to `RDF::Repositories`.
@@ -52,7 +53,8 @@ module ActiveTriples
     #
     # @return [Boolean]
     def reload
-      source << repository.query(subject: source)
+      solutions = repository.query([source, nil, nil])
+      source << solutions
       @persisted = true unless source.empty?
       true
     end
@@ -66,17 +68,18 @@ module ActiveTriples
 
     private
 
-      ##
-      # Finds an appropriate repository from the calling resource's configuration.
-      # If no repository is configured, builds an ephemeral in-memory
-      # repository and 'persists' there.
-      #
-      # @todo find a way to move this logic out (PersistenceStrategyBuilder?).
-      #   so the dependency on Repositories is externalized.
-      def set_repository
-        return RDF::Repository.new if source.class.repository.nil?
-        repo = Repositories.repositories[source.class.repository]
-        repo || raise(RepositoryNotFoundError, "The class #{source.class} expects a repository called #{source.class.repository}, but none was declared")
-      end
+    ##
+    # Finds an appropriate repository from the calling resource's configuration.
+    # If no repository is configured, builds an ephemeral in-memory
+    # repository and 'persists' there.
+    #
+    # @todo find a way to move this logic out (PersistenceStrategyBuilder?).
+    #   so the dependency on Repositories is externalized.
+    def set_repository
+      return RDF::Repository.new if source.class.repository.nil?
+
+      repo = Repositories.repositories[source.class.repository]
+      repo || raise(RepositoryNotFoundError, "The class #{source.class} expects a repository called #{source.class.repository}, but none was declared")
+    end
   end
 end

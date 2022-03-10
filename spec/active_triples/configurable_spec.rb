@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require "spec_helper"
+
+require 'spec_helper'
 
 describe ActiveTriples::Configurable do
   before do
@@ -8,14 +9,14 @@ describe ActiveTriples::Configurable do
     end
   end
 
-  after { Object.send(:remove_const, "DummyConfigurable") }
+  after { Object.send(:remove_const, 'DummyConfigurable') }
 
-  it "should be okay if not configured" do
+  it 'should be okay if not configured' do
     expect(DummyConfigurable.type).to eq nil
   end
 
-  it "should be okay if configured to nil" do
-    DummyConfigurable.configure :type => nil
+  it 'should be okay if configured to nil' do
+    DummyConfigurable.configure type: nil
     expect(DummyConfigurable.type).to eq []
   end
 
@@ -33,7 +34,7 @@ describe ActiveTriples::Configurable do
     let(:rdf_label)  { RDF::Vocab::DC.title }
     let(:repository) { RDF::Repository.new }
 
-    after { Object.send(:remove_const, "ConfigurableSubclass") }
+    after { Object.send(:remove_const, 'ConfigurableSubclass') }
 
     it 'inherits type from parent' do
       expect(ConfigurableSubclass.type).to eq DummyConfigurable.type
@@ -42,16 +43,16 @@ describe ActiveTriples::Configurable do
 
   describe '#configure' do
     before do
-      DummyConfigurable.configure base_uri:  "http://example.org/base",
-                                  type:      RDF::RDFS.Class,
+      DummyConfigurable.configure base_uri: 'http://example.org/base',
+                                  type: RDF::RDFS.Class,
                                   rdf_label: RDF::Vocab::DC.title
     end
 
     it 'should set a base uri' do
-      expect(DummyConfigurable.base_uri).to eq "http://example.org/base"
+      expect(DummyConfigurable.base_uri).to eq 'http://example.org/base'
     end
 
-    it "should be able to set multiple types" do
+    it 'should be able to set multiple types' do
       DummyConfigurable.configure type: [RDF::RDFS.Container,
                                          RDF::RDFS.ContainerMembershipProperty]
 
@@ -69,7 +70,7 @@ describe ActiveTriples::Configurable do
       expect(DummyConfigurable.type).to eq [RDF::RDFS.Class]
     end
 
-    it "should be able to set multiple types" do
+    it 'should be able to set multiple types' do
       DummyConfigurable.configure type: RDF::RDFS.Container
 
       expect(DummyConfigurable.type)

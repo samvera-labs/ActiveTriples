@@ -1,19 +1,20 @@
 # frozen_string_literal: true
+
 require 'active_support/core_ext/module/delegation'
 
 module ActiveTriples
   ##
   # A `Relation` represents the values of a specific property/predicate on an
-  # `RDFSource`. Each relation is a set (`Enumerable` of the `RDF::Term`s that 
+  # `RDFSource`. Each relation is a set (`Enumerable` of the `RDF::Term`s that
   # are objects in the of source's triples of the form:
   #
   #     <{#parent}> <{#predicate}> [term] .
   #
-  # Relations express a binary relationships (over a predicate) between the 
+  # Relations express a binary relationships (over a predicate) between the
   # parent node and a set of terms.
   #
   # When the term is a URI or Blank Node, it is represented in the results as an
-  # `RDFSource`. Literal values are cast to strings, Ruby native types, or 
+  # `RDFSource`. Literal values are cast to strings, Ruby native types, or
   # remain as an `RDF::Literal` as documented in `#each`.
   #
   # @see RDF::Term
@@ -63,7 +64,7 @@ module ActiveTriples
       (objects.to_a & array.objects.to_a)
         .map { |object| convert_object(object) }
     end
-    
+
     ##
     # @param array [#to_ary, ActiveTriples::Relation]
     # @return [Array]
@@ -73,7 +74,7 @@ module ActiveTriples
     # @see Array#|
     def |(array)
       return to_a | array unless array.is_a? Relation
-      
+
       (objects.to_a | array.objects.to_a)
         .map { |object| convert_object(object) }
     end
@@ -93,8 +94,8 @@ module ActiveTriples
     end
 
     ##
-    # Mimics `Set#<=>`, returning `0` when set membership is equivalent, and 
-    # `nil` (as non-comparable) otherwise. Unlike `Set#<=>`, uses `#==` for 
+    # Mimics `Set#<=>`, returning `0` when set membership is equivalent, and
+    # `nil` (as non-comparable) otherwise. Unlike `Set#<=>`, uses `#==` for
     # member comparisons.
     #
     # @param [Object] other
@@ -106,6 +107,7 @@ module ActiveTriples
       # If we're empty, avoid calling `#to_a` on other.
       if empty?
         return 0 if other.each.first.nil?
+
         return nil
       end
 
@@ -126,7 +128,7 @@ module ActiveTriples
         end
 
         length += 1
-        
+
         # Return as not comparable if we have seen more terms than are in other,
         # or if other does not include the current term.
         return nil if other_length < length || !other.include?(current)
@@ -141,9 +143,9 @@ module ActiveTriples
     # @return [Relation] a relation containing the set values; i.e. `self`
     def <<(values)
       values = prepare_relation(values) if values.is_a?(Relation)
-      self.set(objects.to_a | Array.wrap(values))
+      set(objects.to_a | Array.wrap(values))
     end
-    alias_method :push, :<<
+    alias push <<
 
     ##
     # Builds a node with the given attributes, adding it to the relation.
@@ -190,17 +192,17 @@ module ActiveTriples
     # @see RDFSource#attributes=
     # @see http://guides.rubyonrails.org/active_model_basics.html for some
     #   context on ActiveModel attributes.
-    def build(attributes={})
+    def build(attributes = {})
       new_subject = attributes.fetch('id') { RDF::Node.new }
 
       make_node(new_subject).tap do |node|
         node.attributes = attributes.except('id')
-        if parent.kind_of? List::ListResource
+        if parent.is_a? List::ListResource
           parent.list << node
-        elsif node.kind_of? RDF::List
-          self.push node.rdf_subject
+        elsif node.is_a? RDF::List
+          push node.rdf_subject
         else
-          self.push node
+          push node
         end
       end
     end
@@ -211,6 +213,7 @@ module ActiveTriples
     # @return [Relation] self; a now empty relation
     def clear
       return self if empty?
+
       parent.delete([rdf_subject, predicate, nil])
       parent.notify_observers(property)
 
@@ -276,16 +279,16 @@ module ActiveTriples
     ##
     # Gives a result set for the `Relation`.
     #
-    # By default, `RDF::URI` and `RDF::Node` results are cast to `RDFSource`. 
-    # When `cast?` is `false`, `RDF::Resource` values are left in their raw 
+    # By default, `RDF::URI` and `RDF::Node` results are cast to `RDFSource`.
+    # When `cast?` is `false`, `RDF::Resource` values are left in their raw
     # form.
     #
     # `Literal` results are cast as follows:
-    # 
+    #
     #    - Simple string literals are returned as `String`
-    #    - `rdf:langString` literals are always returned as raw `Literal` objects, 
+    #    - `rdf:langString` literals are always returned as raw `Literal` objects,
     #       retaining their language tags.
-    #    - Typed literals are cast to their Ruby `#object` when their datatype 
+    #    - Typed literals are cast to their Ruby `#object` when their datatype
     #      is associated with a `Literal` subclass.
     #
     # @example results with default casting
@@ -340,7 +343,7 @@ module ActiveTriples
     # @return [Object] the first result, if present; else a newly built node
     #
     # @see #build
-    def first_or_create(attributes={})
+    def first_or_create(attributes = {})
       warn 'DEPRECATION: #first_or_create is deprecated for removal in 1.0.0.'
       first || build(attributes)
     end
@@ -361,6 +364,7 @@ module ActiveTriples
     # @see #property
     def predicate
       return property if property.is_a?(RDF::Term)
+
       property_config[:predicate] if is_property?
     end
 
@@ -393,12 +397,12 @@ module ActiveTriples
       raise UndefinedPropertyError.new(property, reflections) if predicate.nil?
 
       values = prepare_relation(values) if values.is_a?(Relation)
-      values = [values].compact unless values.kind_of?(Array)
+      values = [values].compact unless values.is_a?(Array)
 
       clear
       values.each { |val| set_value(val) }
       parent.notify_observers(property)
-      
+
       parent.persist! if parent.persistence_strategy.respond_to?(:ancestors) &&
                          parent.persistence_strategy.ancestors.any? { |r| r.is_a?(ActiveTriples::List::ListResource) }
 
@@ -447,209 +451,209 @@ module ActiveTriples
 
     protected
 
-      ##
-      # Converts an object to the appropriate class.
-      #
-      # Literals are cast only when the datatype is known.
-      #
-      # @private
-      def convert_object(value)
-        case value
-        when RDFSource
+    ##
+    # Converts an object to the appropriate class.
+    #
+    # Literals are cast only when the datatype is known.
+    #
+    # @private
+    def convert_object(value)
+      case value
+      when RDFSource
+        value
+      when RDF::Literal
+        if value.simple?
+          value.object
+        elsif value.has_datatype?
+          RDF::Literal.datatyped_class(value.datatype.to_s) ? value.object : value
+        else
           value
-        when RDF::Literal
-          if value.simple?
-            value.object
-          elsif value.has_datatype?
-            RDF::Literal.datatyped_class(value.datatype.to_s) ? value.object : value
-          else
-            value
-          end
-        when RDF::Resource
-          cast? ? make_node(value) : value
+        end
+      when RDF::Resource
+        cast? ? make_node(value) : value
+      else
+        value
+      end
+    end
+
+    ##
+    # @private
+    def node_cache
+      @node_cache ||= {}
+    end
+
+    ##
+    # @private
+    def objects(&block)
+      solutions = parent.query([rdf_subject, predicate, nil])
+      solutions.extend(RDF::Enumerable) unless solutions.respond_to?(:each_object)
+
+      solutions.each_object(&block)
+    end
+
+    private
+
+    ##
+    # @private
+    def is_property?
+      reflections.has_property?(property) || is_type?
+    end
+
+    ##
+    # @private
+    def is_type?
+      (property == RDF.type || property.to_s == 'type') &&
+        (!reflections.is_a?(RDFSource) || !is_property?)
+    end
+
+    ##
+    # @private
+    # @return [Hash<Symbol, ]
+    def property_config
+      return TYPE_PROPERTY if is_type?
+
+      reflections.reflect_on_property(property)
+    end
+
+    ##
+    # @private
+    def set_value(val)
+      resource = value_to_node(val.respond_to?(:resource) ? val.resource : val)
+      if resource.is_a? RDFSource
+        node_cache[resource.rdf_subject] = nil
+        add_child_node(val, resource)
+        return
+      end
+      resource = resource.to_uri if resource.respond_to? :to_uri
+      raise ValueError, resource unless resource.is_a? RDF::Term
+
+      parent.insert [rdf_subject, predicate, resource]
+    end
+
+    ##
+    # @private
+    def value_to_node(val)
+      valid_datatype?(val) ? RDF::Literal(val) : val
+    end
+
+    def prepare_relation(values)
+      values.objects.map do |value|
+        if value.respond_to?(:resource?) && value.resource?
+          values.convert_object(value)
         else
           value
         end
       end
+    end
 
-      ##
-      # @private
-      def node_cache
-        @node_cache ||= {}
+    ##
+    # @private
+    def add_child_node(object, resource)
+      parent.insert [rdf_subject, predicate, resource.rdf_subject]
+      resource = resource.respond_to?(:resource) ? resource.resource : resource
+
+      new_resource = resource.dup unless object.respond_to?(:resource) && object.resource == resource
+      new_resource ||= resource
+      unless new_resource == parent ||
+             (parent.persistence_strategy.is_a?(ParentStrategy) &&
+              parent.persistence_strategy.ancestors.find { |a| a == new_resource })
+        new_resource.set_persistence_strategy(ParentStrategy)
+        new_resource.parent = parent
       end
 
-      ##
-      # @private
-      def objects(&block)
-        solutions = parent.query(subject: rdf_subject, predicate: predicate)
-        solutions.extend(RDF::Enumerable) unless solutions.respond_to?(:each_object)
-        
-        solutions.each_object(&block)
+      node_cache[resource.rdf_subject] = (resource == object ? new_resource : object)
+    end
+
+    ##
+    # @private
+    def valid_datatype?(val)
+      case val
+      when String, Date, Time, Numeric, Symbol, TrueClass, FalseClass then true
+      else false
+      end
+    end
+
+    ##
+    # Build a child resource or return it from this object's cache
+    #
+    # Builds the resource from the class_name specified for the
+    # property.
+    #
+    # @private
+    def make_node(value)
+      klass = class_for_value(value)
+      value = RDF::Node.new if value.nil?
+
+      return node_cache[value] if node_cache[value]
+
+      node = klass.from_uri(value, parent)
+
+      if is_property? && property_config[:persist_to]
+        node.set_persistence_strategy(property_config[:persist_to])
+
+        node.persistence_strategy.parent = parent if
+          node.persistence_strategy.is_a?(ParentStrategy)
       end
 
-    private
-      ##
-      # @private
-      def is_property?
-        reflections.has_property?(property) || is_type?
+      node_cache[value] ||= node
+    end
+
+    ##
+    # @private
+    def cast?
+      return true unless is_property? || rel_args[:cast]
+      return rel_args[:cast] if rel_args.key?(:cast)
+
+      !!property_config[:cast]
+    end
+
+    ##
+    # @private
+    def final_parent
+      @final_parent ||= begin
+        parent = self.parent
+        parent = parent.parent while parent != parent.parent && parent.parent
+        return parent.datastream if parent.respond_to?(:datastream) && parent.datastream
+
+        parent
+      end
+    end
+
+    ##
+    # @private
+    def class_for_value(v)
+      uri_class(v) || class_for_property
+    end
+
+    ##
+    # @private
+    def uri_class(v)
+      v = RDF::URI.intern(v) if v.is_a? String
+      type_uri = parent.query([v, RDF.type, nil]).to_a.first.try(:object)
+      RDFSource.type_registry[type_uri]
+    end
+
+    ##
+    # @private
+    def class_for_property
+      klass = property_config[:class_name] if is_property?
+      klass ||= Resource
+      klass = ActiveTriples.class_from_string(klass, final_parent.class) if
+        klass.is_a? String
+      klass
+    end
+
+    ##
+    # @private
+    # @return [RDF::Term] the subject of the relation
+    def rdf_subject
+      if value_arguments.empty? || value_arguments.length > 2
+        raise(ArgumentError,
+              "wrong number of arguments (#{value_arguments.length} for 1-2)")
       end
 
-      ##
-      # @private
-      def is_type?
-        (property == RDF.type || property.to_s == "type") &&
-        (!reflections.kind_of?(RDFSource) || !is_property?)
-      end
-
-      ##
-      # @private
-      # @return [Hash<Symbol, ]
-      def property_config
-        return TYPE_PROPERTY if is_type?
-
-        reflections.reflect_on_property(property)
-      end
-
-      ##
-      # @private
-      def set_value(val)
-        resource = value_to_node(val.respond_to?(:resource) ? val.resource : val)
-        if resource.kind_of? RDFSource
-          node_cache[resource.rdf_subject] = nil
-          add_child_node(val, resource)
-          return
-        end
-        resource = resource.to_uri if resource.respond_to? :to_uri
-        raise ValueError, resource unless resource.kind_of? RDF::Term
-        parent.insert [rdf_subject, predicate, resource]
-      end
-
-      ##
-      # @private
-      def value_to_node(val)
-        valid_datatype?(val) ? RDF::Literal(val) : val
-      end
-
-      def prepare_relation(values)
-        values.objects.map do |value|
-          if value.respond_to?(:resource?) && value.resource?
-            values.convert_object(value)
-          else
-            value
-          end  
-        end
-      end
-
-      ##
-      # @private
-      def add_child_node(object, resource)
-        parent.insert [rdf_subject, predicate, resource.rdf_subject]
-        resource = resource.respond_to?(:resource) ? resource.resource : resource
-
-        new_resource = resource.dup unless object.respond_to?(:resource) && object.resource == resource
-        new_resource ||= resource
-        unless new_resource == parent ||
-               (parent.persistence_strategy.is_a?(ParentStrategy) &&
-                parent.persistence_strategy.ancestors.find { |a| a == new_resource })
-          new_resource.set_persistence_strategy(ParentStrategy)
-          new_resource.parent = parent
-        end
-
-        self.node_cache[resource.rdf_subject] = (resource == object ? new_resource : object)
-      end
-
-      ##
-      # @private
-      def valid_datatype?(val)
-        case val
-        when String, Date, Time, Numeric, Symbol, TrueClass, FalseClass then true
-        else false
-        end
-      end
-
-      ##
-      # Build a child resource or return it from this object's cache
-      #
-      # Builds the resource from the class_name specified for the
-      # property.
-      #
-      # @private
-      def make_node(value)
-        klass = class_for_value(value)
-        value = RDF::Node.new if value.nil?
-
-        return node_cache[value] if node_cache[value]
-
-        node = klass.from_uri(value, parent)
-
-        if is_property? && property_config[:persist_to]
-          node.set_persistence_strategy(property_config[:persist_to])
-
-          node.persistence_strategy.parent = parent if
-            node.persistence_strategy.is_a?(ParentStrategy)
-        end
-
-        self.node_cache[value] ||= node
-      end
-
-      ##
-      # @private
-      def cast?
-        return true unless is_property? || rel_args[:cast]
-        return rel_args[:cast] if rel_args.has_key?(:cast)
-        !!property_config[:cast]
-      end
-
-      ##
-      # @private
-      def final_parent
-        @final_parent ||= begin
-          parent = self.parent
-          while parent != parent.parent && parent.parent
-            parent = parent.parent
-          end
-          return parent.datastream if parent.respond_to?(:datastream) && parent.datastream
-          parent
-        end
-      end
-
-      ##
-      # @private
-      def class_for_value(v)
-        uri_class(v) || class_for_property
-      end
-
-      ##
-      # @private
-      def uri_class(v)
-        v = RDF::URI.intern(v) if v.kind_of? String
-        type_uri = parent.query([v, RDF.type, nil]).to_a.first.try(:object)
-        RDFSource.type_registry[type_uri]
-      end
-
-      ##
-      # @private
-      def class_for_property
-        klass = property_config[:class_name] if is_property?
-        klass ||= Resource
-        klass = ActiveTriples.class_from_string(klass, final_parent.class) if
-          klass.kind_of? String
-        klass
-      end
-
-      ##
-      # @private
-      # @return [RDF::Term] the subject of the relation
-      def rdf_subject
-        if value_arguments.length < 1 || value_arguments.length > 2
-          raise(ArgumentError,
-                "wrong number of arguments (#{value_arguments.length} for 1-2)")
-        end
-
-        value_arguments.length > 1 ? value_arguments.first : parent.rdf_subject
-      end
-
-    public
+      value_arguments.length > 1 ? value_arguments.first : parent.rdf_subject
+    end
 
     ##
     # An error class for unallowable values in relations.

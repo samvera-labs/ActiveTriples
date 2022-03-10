@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module ActiveTriples
   class Configuration
     # Basic configuration item which overrides the value for a key on the object.

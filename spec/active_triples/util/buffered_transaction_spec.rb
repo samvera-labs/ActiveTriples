@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require "spec_helper"
+
+require 'spec_helper'
 require 'rdf/spec/transaction'
 require 'active_triples/util/buffered_transaction'
 
@@ -77,7 +78,7 @@ describe ActiveTriples::BufferedTransaction do
   end
 
   describe '#snapshot' do
-    it 'returns its current internal state' 
+    it 'returns its current internal state'
   end
 
   describe '#each' do
@@ -108,7 +109,7 @@ describe ActiveTriples::BufferedTransaction do
 
   #   it_behaves_like 'a buffered changeset'
   #   it_behaves_like 'an optimist'
-    
+
   #   describe '#execute' do
   #     it 'does not reflect changes to parent' do
   #       st = [:s, RDF::URI(:p), 'o']
@@ -120,7 +121,7 @@ describe ActiveTriples::BufferedTransaction do
   #       expect { repository.insert(st); repository.execute }
   #         .not_to change { subject.statements }
   #     end
-      
+
   #     context 'with no changes' do
   #       it 'leaves parent tx unchanged' do
   #         expect { subject.execute }.not_to change { repository.statements }
@@ -143,7 +144,7 @@ describe ActiveTriples::BufferedTransaction do
   #     context 'with changes' do
   #       let(:ins) { RDF::Statement(:ins, RDF::URI('p'), 'o') }
   #       let(:del) { RDF::Statement(:del, RDF::URI('p'), 'o') }
-        
+
   #       before do
   #         subject.insert(ins)
   #         subject.delete(del)

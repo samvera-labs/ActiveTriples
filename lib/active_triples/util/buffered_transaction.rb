@@ -1,23 +1,25 @@
+# frozen_string_literal: true
+
 require 'active_triples/util/extended_bounded_description'
 
 module ActiveTriples
   ##
   # A buffered trasaction for use with `ActiveTriples::ParentStrategy`.
   #
-  # If an `ActiveTriples::RDFSource` instance is passed as the underlying 
-  # repository, this transaction will try to find an existing 
-  # `BufferedTransaction` to use as the basis for a snapshot. When the 
+  # If an `ActiveTriples::RDFSource` instance is passed as the underlying
+  # repository, this transaction will try to find an existing
+  # `BufferedTransaction` to use as the basis for a snapshot. When the
   # transaction is executed, the inserts and deletes are replayed against the
   # `RDFSource`.
   #
-  # If a `RDF::Transaction::TransactionError` is raised on commit, this 
+  # If a `RDF::Transaction::TransactionError` is raised on commit, this
   # transaction optimistically attempts to replay the changes.
   #
-  # Reads are projected onto a specialized "Extended Bounded Description" 
-  # subgraph. 
+  # Reads are projected onto a specialized "Extended Bounded Description"
+  # subgraph.
   #
   # @see ActiveTriples::Util::ExtendedBoundedDescription
-  class BufferedTransaction < 
+  class BufferedTransaction <
         RDF::Repository::Implementation::SerializedTransaction
     # @!attribute snapshot [r]
     #   @return RDF::Dataset
@@ -26,12 +28,12 @@ module ActiveTriples
     # @!attribute ancestors [r]
     #   @return Array<RDF::Term>
     attr_reader :snapshot, :subject, :ancestors
-    
+
     def initialize(repository,
                    ancestors:  [],
-                   subject:    nil, 
-                   graph_name: nil, 
-                   mutable:    false, 
+                   subject:    nil,
+                   graph_name: nil,
+                   mutable:    false,
                    **options,
                    &block)
       @subject   = subject
@@ -47,7 +49,7 @@ module ActiveTriples
         end
       end
 
-      return super
+      super
     end
 
     ##
@@ -93,23 +95,25 @@ module ActiveTriples
     end
 
     ##
-    # Executes optimistically. If errors are encountered, we replay the buffer 
+    # Executes optimistically. If errors are encountered, we replay the buffer
     # on the latest version.
-    # 
-    # If the `repository` is a transaction, we immediately replay the buffer 
+    #
+    # If the `repository` is a transaction, we immediately replay the buffer
     # onto it.
     #
     # @see RDF::Transaction#execute
     def execute
-      raise TransactionError, 'Cannot execute a rolled back transaction. ' \
-                              'Open a new one instead.' if @rolledback
+      if @rolledback
+        raise TransactionError, 'Cannot execute a rolled back transaction. ' \
+                                'Open a new one instead.'
+      end
       return if changes.empty?
       return super unless repository.is_a?(ActiveTriples::RDFSource)
 
       repository.insert(changes.inserts)
       repository.delete(changes.deletes)
-    rescue RDF::Transaction::TransactionError => err
-      raise err if @rolledback
+    rescue RDF::Transaction::TransactionError => e
+      raise e if @rolledback
 
       # replay changest on the current version of the repository
       repository.delete(*changes.deletes)
@@ -117,9 +121,10 @@ module ActiveTriples
     end
 
     private
-    
+
     def read_target
       return super unless subject
+
       ExtendedBoundedDescription.new(super, subject, ancestors)
     end
   end

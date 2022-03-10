@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'active_support/core_ext/class'
 
 module ActiveTriples
@@ -23,7 +24,7 @@ module ActiveTriples
     end
 
     def self.add_reflection(model, name, reflection)
-      model._active_triples_config = 
+      model._active_triples_config =
         model._active_triples_config.merge(name.to_s => reflection)
     end
 
@@ -33,7 +34,7 @@ module ActiveTriples
       #
       # @return [ActiveTriples::NodeConfig] the configuration for the property
       #
-      # @raise [ActiveTriples::UndefinedPropertyError] when the property does 
+      # @raise [ActiveTriples::UndefinedPropertyError] when the property does
       #   not exist
       def reflect_on_property(property)
         _active_triples_config.fetch(property.to_s) do
@@ -42,7 +43,7 @@ module ActiveTriples
       end
 
       ##
-      # @return [Hash{String=>ActiveTriples::NodeConfig}] a hash of property 
+      # @return [Hash{String=>ActiveTriples::NodeConfig}] a hash of property
       #   names and their configurations
       def properties
         _active_triples_config
@@ -51,7 +52,7 @@ module ActiveTriples
       ##
       # @param [Hash{String=>ActiveTriples::NodeConfig}] a complete config hash
       #   to set the properties to.
-      # @return [Hash{String=>ActiveTriples::NodeConfig}] a hash of property 
+      # @return [Hash{String=>ActiveTriples::NodeConfig}] a hash of property
       #   names and their configurations
       def properties=(val)
         self._active_triples_config = val

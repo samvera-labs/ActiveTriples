@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 require 'rdf/turtle'
 require 'rdf/spec/enumerable'
@@ -125,7 +126,7 @@ describe ActiveTriples::RDFSource do
 
     it 'notifies muliple observers of changes' do
       other_observer = double('second observer')
-      values         = ['moomin', 'snork']
+      values         = %w[moomin snork]
 
       expect(observer)
         .to receive(:notify)
@@ -428,7 +429,13 @@ describe ActiveTriples::RDFSource do
 
       it 'is a no-op' do
         subject << RDF::Statement(subject, RDF::Vocab::DC.title, 'Moomin')
-        expect { subject.set_value(:not_a_property, '') rescue nil }
+        expect do
+          begin
+                   subject.set_value(:not_a_property, '')
+          rescue StandardError
+            nil
+                 end
+        end
           .not_to change { subject.triples.to_a }
       end
     end
@@ -489,7 +496,7 @@ describe ActiveTriples::RDFSource do
 
     context 'with multiple values' do
       include_examples 'setting values' do
-        let(:value) { %w('moominpapa moominmama') }
+        let(:value) { %w['moominpapa moominmama'] }
       end
     end
 
@@ -736,16 +743,19 @@ describe ActiveTriples::RDFSource do
 
         it { is_expected.to be_valid }
 
-        context 'and has invaild statements' do
+        context 'and has invalid statements' do
           before { subject << invalid_statement }
 
           it { is_expected.to be_invalid }
 
           it 'has errors' do
-            expect { subject.valid? }
-              .to change { subject.errors.messages }
-              .from({})
-              .to(include(base: ['The underlying graph must be valid']))
+            subject.valid?
+
+            error_messages = subject.errors.messages
+            expect(error_messages).to(include(:base))
+            values = error_messages[:base]
+            expect(values).not_to be_empty
+            expect(values.first.to_s).to eq("The underlying graph must be valid")
           end
         end
       end

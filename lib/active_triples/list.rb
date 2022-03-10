@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module ActiveTriples
   ##
   # An implementation of RDF::List intregrated with ActiveTriples.
@@ -13,12 +14,12 @@ module ActiveTriples
     include Reflection
 
     delegate :rdf_subject, :mark_for_destruction, :marked_for_destruction?, :set_value, :get_values, :parent, :persist, :persist!, :type, :dump, :attributes=, to: :resource
-    alias_method :to_ary, :to_a
+    alias to_ary to_a
 
     class << self
       def from_uri(uri, vals)
         list = ListResource.from_uri(uri, vals)
-        self.new(subject: list.rdf_subject, graph: list)
+        new(subject: list.rdf_subject, graph: list)
       end
     end
 
@@ -29,7 +30,7 @@ module ActiveTriples
     def initialize(subject: nil, graph: nil, values: nil, &block)
       super
       @graph = ListResource.new(subject) unless
-        graph.kind_of? RDFSource
+        graph.is_a? RDFSource
       @graph << parent if parent
       @graph.list = self
       @graph.reload
@@ -55,6 +56,7 @@ module ActiveTriples
       end
       each_subject.with_index do |v, i|
         next unless i == idx
+
         resource.set_value(v, RDF.first, value)
       end
     end
@@ -64,6 +66,7 @@ module ActiveTriples
     # appropriate.
     def each(&block)
       return super unless block_given?
+
       super { |value| yield node_from_value(value) }
     end
 
@@ -103,14 +106,15 @@ module ActiveTriples
       end
 
       def attributes=(values)
-        raise ArgumentError, "values must be a Hash, you provided #{values.class}" unless values.kind_of? Hash
+        raise ArgumentError, "values must be a Hash, you provided #{values.class}" unless values.is_a? Hash
+
         values.with_indifferent_access.each do |key, value|
-          if reflections.properties.keys.map { |k| "#{k}_attributes" }.include?(key)
-            klass = reflections.reflect_on_property(key[0..-12])['class_name']
-            klass = ActiveTriples.class_from_string(klass, final_parent.class) if klass.is_a? String
-            value.is_a?(Hash) ? attributes_hash_to_list(values[key], klass) : attributes_to_list(value, klass)
-            values.delete key
-          end
+          next unless reflections.properties.keys.map { |k| "#{k}_attributes" }.include?(key)
+
+          klass = reflections.reflect_on_property(key[0..-12])['class_name']
+          klass = ActiveTriples.class_from_string(klass, final_parent.class) if klass.is_a? String
+          value.is_a?(Hash) ? attributes_hash_to_list(values[key], klass) : attributes_to_list(value, klass)
+          values.delete key
         end
         super
       end
@@ -125,21 +129,21 @@ module ActiveTriples
 
       private
 
-        def attributes_to_list(value, klass)
-          value.each do |entry|
-            item = klass.new()
-            item.attributes = entry
-            list << item
-          end
+      def attributes_to_list(value, klass)
+        value.each do |entry|
+          item = klass.new
+          item.attributes = entry
+          list << item
         end
+      end
 
-        def attributes_hash_to_list(value, klass)
-          value.each do |counter, attr|
-            item = klass.new()
-            item.attributes = attr if attr
-            list[counter.to_i] = item
-          end
+      def attributes_hash_to_list(value, klass)
+        value.each do |counter, attr|
+          item = klass.new
+          item.attributes = attr if attr
+          list[counter.to_i] = item
         end
+      end
     end
 
     ##
@@ -150,10 +154,10 @@ module ActiveTriples
     # @NOTE Lists built this way will return false for #valid?
     def <<(value)
       value = case value
-        when nil         then RDF.nil
-        when RDF::Value  then value
-        when Array       then RDF::List.new(nil, graph, value)
-        else value
+              when nil         then RDF.nil
+              when RDF::Value  then value
+              when Array       then RDF::List.new(nil, graph, value)
+              else value
       end
 
       if subject == RDF.nil
@@ -167,11 +171,11 @@ module ActiveTriples
         @graph.type = RDF.List
         resource.set_value(RDF.first, value)
         resource.insert([subject.to_term, RDF.rest, RDF.nil])
-        resource << value if value.kind_of? RDFSource
+        resource << value if value.is_a? RDFSource
         return self
       end
       super
-      if value.kind_of? RDFSource
+      if value.is_a? RDFSource
         resource << value
         value.set_persistence_strategy(ParentStrategy)
         value.persistence_strategy.parent = resource

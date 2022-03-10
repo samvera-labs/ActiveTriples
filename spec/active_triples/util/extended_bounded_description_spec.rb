@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require "spec_helper"
+
+require 'spec_helper'
 require 'rdf/spec/enumerable'
 require 'rdf/spec/queryable'
 require 'active_triples/util/extended_bounded_description'
@@ -14,7 +15,7 @@ describe ActiveTriples::ExtendedBoundedDescription do
   it { is_expected.not_to be_mutable }
 
   shared_examples 'a bounded description' do
-    before do 
+    before do
       source_graph.insert(*included_statements)
       source_graph.insert(*excluded_statements)
     end
@@ -27,7 +28,7 @@ describe ActiveTriples::ExtendedBoundedDescription do
       expect(subject).to contain_exactly(*included_statements)
       expect(subject).to contain_exactly(*included_statements)
     end
-    
+
     it 'is queryable' do
       expect(subject.query([nil, nil, nil]))
         .to contain_exactly(*included_statements)
@@ -62,7 +63,7 @@ describe ActiveTriples::ExtendedBoundedDescription do
   #
   # *** end boring stuff
   ##
-  
+
   let(:included_statements) do
     [RDF::Statement(starting_node, RDF::URI('p1'), 'o'),
      RDF::Statement(starting_node, RDF::URI('p2'), 0),
@@ -86,10 +87,10 @@ describe ActiveTriples::ExtendedBoundedDescription do
       included_statements <<
         RDF::Statement(starting_node, RDF::URI('a'), ancestor)
 
-      excluded_statements << 
+      excluded_statements <<
         RDF::Statement(ancestor, RDF::URI('a'), starting_node)
     end
-    
+
     let(:ancestor)  { RDF::Node.new(:ancestor) }
     let(:ancestors) { [ancestor] }
 

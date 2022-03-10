@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'active_support/core_ext/array/wrap'
 
 module ActiveTriples
@@ -15,7 +16,7 @@ module ActiveTriples
   # Available properties are base_uri, rdf_label, type, and repository
   module Configurable
     def inherited(child_class)
-      child_class.configure type: self.type
+      child_class.configure type: type
       super
     end
 
@@ -57,9 +58,7 @@ module ActiveTriples
     # @param options [Hash]
     def configure(options = {})
       options = options.map do |key, value|
-        if self.respond_to?("transform_#{key}")
-          value = self.__send__("transform_#{key}", value)
-        end
+        value = __send__("transform_#{key}", value) if respond_to?("transform_#{key}")
         [key, value]
       end
       @configuration = configuration.merge(options)

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module ActiveTriples
   class Configuration
     ## Returns a configuration item appropriate for a given configuration property.
