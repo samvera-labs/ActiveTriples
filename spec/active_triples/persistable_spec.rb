@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 describe ActiveTriples::Persistable do
@@ -73,8 +74,8 @@ describe ActiveTriples::Persistable do
     it 'sets new persistence strategy as an instance of the given class' do
       expect { subject.set_persistence_strategy(strategy_class) }
         .to change { subject.persistence_strategy }
-             .from(an_instance_of(ActiveTriples::RepositoryStrategy))
-             .to(strategy)
+        .from(an_instance_of(ActiveTriples::RepositoryStrategy))
+        .to(strategy)
     end
   end
 

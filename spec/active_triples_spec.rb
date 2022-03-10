@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 describe ActiveTriples do
@@ -10,7 +11,7 @@ describe ActiveTriples do
 
       class TestBase; end
     end
-    
+
     after do
       Object.send(:remove_const, :TestModule)
       Object.send(:remove_const, :TestBase)
@@ -50,7 +51,7 @@ describe ActiveTriples do
         .to eq TestModule::TestClass
     end
   end
-  
+
   describe '.ActiveTripels' do
     it 'outputs a string' do
       expect { described_class.ActiveTripels }.to output.to_stdout

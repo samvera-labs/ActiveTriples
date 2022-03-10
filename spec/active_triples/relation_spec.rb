@@ -1,14 +1,14 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 require 'rdf/isomorphic'
 
 describe ActiveTriples::Relation do
+  subject { described_class.new(parent_resource, value_args) }
+
   let(:parent_resource) { double('parent resource', reflections: {}) }
   let(:value_args)      { double('value args', last: {}) }
-
   let(:uri) { RDF::URI('http://example.org/moomin') }
-
-  subject { described_class.new(parent_resource, value_args) }
 
   shared_context 'with URI property' do
     subject { described_class.new(parent_resource, [property]) }
@@ -59,8 +59,8 @@ describe ActiveTriples::Relation do
     let(:other_property) { :snork }
   end
 
-  [:&, :|, :+].each do |array_method|
-    describe "#{array_method}" do
+  %i[& | +].each do |array_method|
+    describe array_method.to_s do
       shared_examples 'array method behavior' do
         it "behaves like `Array##{array_method}`" do
           expect(subject.send(array_method.to_sym, other_array))
@@ -202,15 +202,14 @@ describe ActiveTriples::Relation do
       end
 
       types = { numeric: [0, 1, 2, 3_000_000_000],
-                string:  ['moomin', 'snork', 'snufkin'],
-                lang:    [RDF::Literal('Moomin', language: :en),
-                          RDF::Literal('Mummi', language: :fi)],
-                date:    [Date.today, Date.today - 1],
-                uri:     [RDF::URI('one'), RDF::URI('two'), RDF::URI('three')],
-                node:    [RDF::Node.new, RDF::Node.new],
-              }
+                string: %w[moomin snork snufkin],
+                lang: [RDF::Literal('Moomin', language: :en),
+                       RDF::Literal('Mummi', language: :fi)],
+                date: [Date.today, Date.today - 1],
+                uri: [RDF::URI('one'), RDF::URI('two'), RDF::URI('three')],
+                node: [RDF::Node.new, RDF::Node.new] }
 
-      types.each do |type, values|
+      types.each do |type, _values|
         it "gives 0 when containing the same #{type} elements" do
           subject << 1
           other   << 1
@@ -228,27 +227,27 @@ describe ActiveTriples::Relation do
           end
         end
 
-        it "gives 0 when containing the same varied elements" do
+        it 'gives 0 when containing the same varied elements' do
           expect(subject <=> other).to eq 0
         end
 
-        it "gives nil when other contains a subset of varied elements" do
+        it 'gives nil when other contains a subset of varied elements' do
           subject << 'extra'
           expect(subject <=> other).to be_nil
         end
 
-        it "gives nil when other contains a superset of varied elements" do
+        it 'gives nil when other contains a superset of varied elements' do
           other << 'extra'
           expect(subject <=> other).to be_nil
         end
 
-        it "gives nil when other contains a subset by language" do
-          subject << RDF::Literal("Moomin", language: :aa)
+        it 'gives nil when other contains a subset by language' do
+          subject << RDF::Literal('Moomin', language: :aa)
           expect(subject <=> other).to be_nil
         end
 
-        it "gives nil when other contains a superset by language" do
-          other << RDF::Literal("Moomin", language: :aa)
+        it 'gives nil when other contains a superset by language' do
+          other << RDF::Literal('Moomin', language: :aa)
           expect(subject <=> other).to be_nil
         end
       end
@@ -302,8 +301,8 @@ describe ActiveTriples::Relation do
       include_context 'with symbol property' do
         before do
           reflections.property :moomin,
-                               cast:       false,
-                               predicate:  RDF::Vocab::DC.relation
+                               cast: false,
+                               predicate: RDF::Vocab::DC.relation
         end
       end
 
@@ -320,7 +319,7 @@ describe ActiveTriples::Relation do
       include_context 'with symbol property' do
         before do
           reflections.property :moomin,
-                               predicate:  RDF::Vocab::DC.relation,
+                               predicate: RDF::Vocab::DC.relation,
                                class_name: 'WithTitle'
           class WithTitle
             include ActiveTriples::RDFSource
@@ -468,8 +467,8 @@ describe ActiveTriples::Relation do
     end
 
     it 'subtracts token values' do
-      subject.set([:one, :two, :three])
-      expect { subject.subtract([:two, :three]) }
+      subject.set(%i[one two three])
+      expect { subject.subtract(%i[two three]) }
         .to change { subject.to_a }.to contain_exactly(:one)
     end
 
@@ -568,14 +567,14 @@ describe ActiveTriples::Relation do
     end
 
     it 'adds multiple values' do
-      values = [:moomin, :snork]
+      values = %i[moomin snork]
       expect { subject << values }
         .to change { subject.to_a }.to contain_exactly(*values)
     end
 
     it 'notifies observers on the parent' do
       observer = double(:observer)
-      values   = [:moomin, :snork]
+      values   = %i[moomin snork]
       parent_resource.add_observer(observer)
 
       expect(observer)
@@ -591,24 +590,24 @@ describe ActiveTriples::Relation do
 
       expect { values.each { |v| subject << v } }
         .to change { subject.send(:objects).to_a }
-             .to contain_exactly(*values)
+        .to contain_exactly(*values)
     end
 
     it 'keeps languages' do
-      values = [RDF::Literal("Moomin", language: :en),
-                RDF::Literal("Mummi",  language: :fi)]
+      values = [RDF::Literal('Moomin', language: :en),
+                RDF::Literal('Mummi',  language: :fi)]
 
       expect { values.each { |v| subject << v } }
         .to change { subject.send(:objects).to_a }
-             .to contain_exactly(*values)
+        .to contain_exactly(*values)
     end
 
     context 'when given a Relation' do
       it 'keeps datatypes and languages of values' do
         values = [RDF::Literal(Date.today),
                   RDF::Literal(:moomin),
-                  RDF::Literal("Moomin", language: :en),
-                  RDF::Literal("Mummi",  language: :fi)]
+                  RDF::Literal('Moomin', language: :en),
+                  RDF::Literal('Mummi',  language: :fi)]
 
         subject.set(values)
         expect(subject.send(:objects)).to contain_exactly(*values)
@@ -626,8 +625,7 @@ describe ActiveTriples::Relation do
 
         expect { subject << 'snowflake' }
           .to change { subject.to_a }
-               .to contain_exactly(literal, 'snowflake')
-
+          .to contain_exactly(literal, 'snowflake')
       end
 
       context 'with a datatyped literal' do
@@ -646,7 +644,7 @@ describe ActiveTriples::Relation do
 
           expect { subject << 'special' }
             .to change { subject.send(:objects).to_a }
-                 .to contain_exactly(literal, RDF::Literal('special'))
+            .to contain_exactly(literal, RDF::Literal('special'))
         end
       end
     end
@@ -774,7 +772,7 @@ describe ActiveTriples::Relation do
               reflections
                 .property property,
                           class_name: this_class,
-                          predicate:  RDF::URI('http://example.org/moomin')
+                          predicate: RDF::URI('http://example.org/moomin')
             end
 
             it 'casts values with no type to the class' do
@@ -854,7 +852,14 @@ describe ActiveTriples::Relation do
     subject { described_class.new(parent_resource, double('value args')) }
 
     context 'when relation has 0 value arguments' do
-      before { subject.value_arguments = double(length: 0) }
+      let(:value_arguments) { double }
+
+      before do
+        allow(value_arguments).to receive(:length).and_return(0)
+        allow(value_arguments).to receive(:empty?).and_return(true)
+
+        subject.value_arguments = value_arguments
+      end
 
       it 'should raise an error' do
         expect { subject.send(:rdf_subject) }.to raise_error ArgumentError
@@ -862,9 +867,14 @@ describe ActiveTriples::Relation do
     end
 
     context 'when term has 1 value argument' do
+      let(:value_arguments) { double }
+
       before do
+        allow(value_arguments).to receive(:length).and_return(1)
+        allow(value_arguments).to receive(:empty?).and_return(false)
+
         allow(subject.parent).to receive(:rdf_subject) { 'parent subject' }
-        subject.value_arguments = double(length: 1)
+        subject.value_arguments = value_arguments
       end
 
       it "should call `rdf_subject' on the parent" do
@@ -877,7 +887,15 @@ describe ActiveTriples::Relation do
     end
 
     context 'when relation has 2 value arguments' do
-      before { subject.value_arguments = double(length: 2, first: 'first') }
+      let(:value_arguments) { double }
+
+      before do
+        allow(value_arguments).to receive(:length).and_return(2)
+        allow(value_arguments).to receive(:first).and_return('first')
+        allow(value_arguments).to receive(:empty?).and_return(false)
+
+        subject.value_arguments = value_arguments
+      end
 
       it 'should return the first value argument' do
         expect(subject.send(:rdf_subject)).to eq 'first'
@@ -885,7 +903,13 @@ describe ActiveTriples::Relation do
     end
 
     context 'when relation has 3 value arguments' do
-      before { subject.value_arguments = double(length: 3) }
+      let(:value_arguments) { double }
+      before do
+        allow(value_arguments).to receive(:length).and_return(3)
+        allow(value_arguments).to receive(:empty?).and_return(false)
+
+        subject.value_arguments = value_arguments
+      end
 
       it 'should raise an error' do
         expect { subject.send(:rdf_subject) }.to raise_error ArgumentError
@@ -937,14 +961,14 @@ describe ActiveTriples::Relation do
       end
 
       it 'sets mulitple values' do
-        values = [:moomin, :snork]
+        values = %i[moomin snork]
         expect { subject.set(values) }
           .to change { subject.to_a }.to contain_exactly(*values)
       end
 
       it 'notifies observers on the parent' do
         observer = double(:observer)
-        values   = [:moomin, :snork]
+        values   = %i[moomin snork]
         parent_resource.add_observer(observer)
 
         expect(observer)
@@ -967,9 +991,9 @@ describe ActiveTriples::Relation do
           values = [Date.today,
                     'Moomin',
                     :moomin,
-                    RDF::Literal("Moomin", language: :en),
-                    RDF::Literal("Mummi",  language: :fi),
-                    RDF::Literal("Moomin", datatype: RDF::URI('custom')),
+                    RDF::Literal('Moomin', language: :en),
+                    RDF::Literal('Mummi',  language: :fi),
+                    RDF::Literal('Moomin', datatype: RDF::URI('custom')),
                     DummySnowflake.new('Moomin')]
 
           subject.set(values)

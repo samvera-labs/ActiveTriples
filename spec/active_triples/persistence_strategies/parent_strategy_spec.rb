@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 describe ActiveTriples::ParentStrategy do
@@ -27,12 +28,12 @@ describe ActiveTriples::ParentStrategy do
       end
 
       context 'after persist!' do
-        context "when the parent is not persisted" do
+        context 'when the parent is not persisted' do
           before { subject.persist! }
           it { is_expected.not_to be_persisted }
         end
 
-        context "when the parent is persisted" do
+        context 'when the parent is persisted' do
           before do
             allow(parent).to receive(:persisted?).and_return(true)
             subject.persist!
@@ -146,11 +147,11 @@ describe ActiveTriples::ParentStrategy do
   end
 
   describe '#parent' do
-    it { is_expected.to have_attributes(:parent => nil) }
+    it { is_expected.to have_attributes(parent: nil) }
 
     context 'with a parent' do
       include_context 'with a parent'
-      it { is_expected.to have_attributes(:parent => parent) }
+      it { is_expected.to have_attributes(parent: parent) }
     end
   end
 
@@ -189,7 +190,7 @@ describe ActiveTriples::ParentStrategy do
 
         expect { subject.persist! }
           .to change { subject.parent.statements }
-               .to contain_exactly *rdf_source.statements
+          .to contain_exactly(*rdf_source.statements)
       end
 
       it 'writes to #parent graph when parent changes while child is live' do
@@ -200,8 +201,8 @@ describe ActiveTriples::ParentStrategy do
 
         expect { subject.persist! }
           .to change { parent.statements }
-               .from(contain_exactly(parent_st))
-               .to(contain_exactly(parent_st, child_st))
+          .from(contain_exactly(parent_st))
+          .to(contain_exactly(parent_st, child_st))
       end
 
       context 'with nested parents' do
@@ -221,8 +222,8 @@ describe ActiveTriples::ParentStrategy do
 
           expect { subject.persist! }
             .to change { parent.statements }
-                 .from(contain_exactly(parent_st))
-                 .to(contain_exactly(parent_st, child_st))
+            .from(contain_exactly(parent_st))
+            .to(contain_exactly(parent_st, child_st))
         end
 
         it 'writes to #last graph when persisting' do
@@ -233,8 +234,8 @@ describe ActiveTriples::ParentStrategy do
 
           expect { subject.persist!; parent.persist! }
             .to change { last.statements }
-                 .from(contain_exactly(parent_st))
-                 .to(contain_exactly(parent_st, child_st))
+            .from(contain_exactly(parent_st))
+            .to(contain_exactly(parent_st, child_st))
         end
       end
     end

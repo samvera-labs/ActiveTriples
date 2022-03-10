@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 describe ActiveTriples::Reflection do
@@ -23,7 +24,7 @@ describe ActiveTriples::Reflection do
         .to change { klass._active_triples_config }.to config_hash
     end
   end
-  
+
   describe '.properties' do
     it 'gets the set properties' do
       klass.properties = config_hash
@@ -36,13 +37,13 @@ describe ActiveTriples::Reflection do
     before { klass.properties = config_hash }
 
     it 'returns true for properties it has' do
-      klass._active_triples_config.each do |property, _| 
+      klass._active_triples_config.each do |property, _|
         expect(klass).to have_property property
       end
     end
 
     it 'coerces to a string' do
-      klass._active_triples_config.each do |property, _| 
+      klass._active_triples_config.each do |property, _|
         expect(klass).to have_property property.to_sym
       end
     end
@@ -56,13 +57,13 @@ describe ActiveTriples::Reflection do
     before { klass.properties = config_hash }
 
     it 'gets the config for the requested property' do
-      klass._active_triples_config.each do |property, config| 
+      klass._active_triples_config.each do |property, config|
         expect(klass.reflect_on_property(property)).to eq config
       end
     end
 
     it 'coerces to a string' do
-      klass._active_triples_config.each do |property, config| 
+      klass._active_triples_config.each do |property, config|
         expect(klass.reflect_on_property(property.to_sym)).to eq config
       end
     end

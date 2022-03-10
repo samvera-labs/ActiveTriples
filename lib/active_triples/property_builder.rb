@@ -1,14 +1,14 @@
 # frozen_string_literal: true
+
 module ActiveTriples
   ##
   # A builder for property `NodeConfig`s
   #
-  # @example 
+  # @example
   #   PropertyBuilder.build(:creator, predicate: RDF::Vocab::DC.creator)
-  # 
+  #
   # @see NodeConfig
   class PropertyBuilder
-
     # @!attribute [r] name
     #   @return
     # @!attribute [r] options
@@ -18,7 +18,7 @@ module ActiveTriples
     ##
     # @param name []
     # @param options []
-    def initialize(name, options, &block)
+    def initialize(name, options)
       @name = name
       @options = options
     end
@@ -26,7 +26,7 @@ module ActiveTriples
     ##
     # @param  name [Symbol]
     # @param  options [Hash<Symbol>]
-    # @option options [RDF::URI] :predicate  
+    # @option options [RDF::URI] :predicate
     # @option options [String, Class] :class_name
     # @option options [Boolean] :cast
     #
@@ -39,11 +39,11 @@ module ActiveTriples
     #
     # @see #build
     def self.create_builder(name, options, &block)
-      raise ArgumentError, "property names must be a Symbol" unless
-        name.kind_of?(Symbol)
+      raise ArgumentError, 'property names must be a Symbol' unless
+        name.is_a?(Symbol)
 
       options[:predicate] = RDF::URI.intern(options[:predicate])
-      raise ArgumentError, "must provide an RDF::URI to :predicate" unless
+      raise ArgumentError, 'must provide an RDF::URI to :predicate' unless
         options[:predicate].valid?
 
       new(name, options, &block)
@@ -56,7 +56,7 @@ module ActiveTriples
       reflection
     end
 
-    def self.define_accessors(model, reflection, options={})
+    def self.define_accessors(model, reflection, options = {})
       mixin = model.generated_property_methods
       name = reflection.term
       define_readers(mixin, name)
@@ -87,7 +87,7 @@ module ActiveTriples
         end
       CODE
     end
-    
+
     ##
     # @yield yields to block configuring index behaviors
     # @yieldparam index_object [NodeConfig::IndexObject]

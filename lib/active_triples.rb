@@ -1,13 +1,14 @@
 # frozen_string_literal: true
-require 'rdf'
-require 'active_triples/version'
+
 require 'active_support'
+require 'active_triples/version'
+require 'rdf'
 
 ##
-# An ActiveModel compliant ObjectGraphMapper for RDF data. 
-# 
-# Models graphs as `RDFSources` with property/attribute configuration, 
-# accessors, and other methods to support Linked Data in a Ruby enviornment. 
+# An ActiveModel compliant ObjectGraphMapper for RDF data.
+#
+# Models graphs as `RDFSources` with property/attribute configuration,
+# accessors, and other methods to support Linked Data in a Ruby enviornment.
 #
 # @example modeling a simple resource
 #   class Thing
@@ -20,11 +21,11 @@ require 'active_support'
 #   obj = Thing.new('123')
 #   obj.title = 'Resource'
 #   obj.description = 'A resource.'
-#   obj.dump :ntriples 
+#   obj.dump :ntriples
 #    # => "<http://example.org/things#123> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .\n<http://example.org/things#123> <http://purl.org/dc/terms/title> \"Resource\" .\n<http://example.org/things#123> <http://purl.org/dc/terms/description> \"A resource.\" .\n"
 #
-# @see http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/#change-over-time 
-#   RDF Concepts and Abstract Syntax for an informal definition of an RDF 
+# @see http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/#change-over-time
+#   RDF Concepts and Abstract Syntax for an informal definition of an RDF
 #   Source.
 module ActiveTriples
   extend ActiveSupport::Autoload
@@ -58,7 +59,7 @@ module ActiveTriples
     # error classes
     autoload :UndefinedPropertyError
   end
-  
+
   ##
   # Raised when a declared repository doesn't have a definition
   class RepositoryNotFoundError < StandardError
@@ -72,18 +73,18 @@ module ActiveTriples
   #    ActiveTriples.class_from_string('MyClass') # => MyClass
   #
   # @example finding a class in a module
-  #    ActiveTriples.class_from_string('MyClass', MyModule) 
+  #    ActiveTriples.class_from_string('MyClass', MyModule)
   #    # => MyModule::MyClass
   #
   # @example when a class exists above the module, but not in it
-  #    ActiveTriples.class_from_string('Object', MyModule) 
+  #    ActiveTriples.class_from_string('Object', MyModule)
   #    # => Object
   #
   # @param class_name [String]
   # @param container_class
   #
   # @return [Class]
-  def self.class_from_string(class_name, container_class=Kernel)
+  def self.class_from_string(class_name, container_class = Kernel)
     container_class = container_class.name if container_class.is_a? Module
     container_parts = container_class.split('::')
     (container_parts + class_name.split('::'))
@@ -114,7 +115,7 @@ module ActiveTriples
             / \\
         ,---------.
 
-eos
-"Yum"
+    eos
+    'Yum'
   end
 end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 require 'active_model'
 
@@ -41,13 +42,13 @@ describe ActiveTriples::Identifiable do
   context 'without implementation' do
     describe '::from_uri' do
       it 'raises a NotImplementedError' do
-       expect{ klass.from_uri(RDF::URI('http://example.org/blah')) }.to raise_error NotImplementedError
+        expect { klass.from_uri(RDF::URI('http://example.org/blah')) }.to raise_error NotImplementedError
       end
     end
 
     describe '#to_uri' do
       it 'raises a NotImplementedError' do
-       expect{ subject.to_uri }.to raise_error NotImplementedError
+        expect { subject.to_uri }.to raise_error NotImplementedError
       end
     end
   end
@@ -65,13 +66,12 @@ describe ActiveTriples::Identifiable do
             resource.get_values(prop)
           end
 
-          define_method "#{prop.to_s}=" do |*args|
+          define_method "#{prop}=" do |*args|
             resource.set_value(prop, *args)
           end
 
           resource_class.property(*args)
         end
-
       end
 
       subject.id = '123'
@@ -79,7 +79,7 @@ describe ActiveTriples::Identifiable do
 
     describe '::properties' do
       before do
-        klass.property :title, :predicate => RDF::Vocab::DC.title
+        klass.property :title, predicate: RDF::Vocab::DC.title
       end
       it 'can be set' do
         expect(klass.properties).to include 'title'
@@ -111,7 +111,7 @@ describe ActiveTriples::Identifiable do
         end
 
         it 'does not effect other classes' do
-          klass.property :identifier, :predicate => RDF::Vocab::DC.identifier
+          klass.property :identifier, predicate: RDF::Vocab::DC.identifier
           expect(ActiveExampleTwo.properties).to be_empty
         end
       end
@@ -160,15 +160,15 @@ describe ActiveTriples::Identifiable do
       end
     end
 
-    describe "adding it as a property for an AT Resource" do
+    describe 'adding it as a property for an AT Resource' do
       include_context 'with data'
-      it "returns the same in-memory object added" do
+      it 'returns the same in-memory object added' do
         resource = MyResource.new
         resource.relation = subject
 
         expect(resource.relation).to eq [subject]
       end
-      it "can share that object with another resource" do
+      it 'can share that object with another resource' do
         resource = MyResource.new
         resource_2 = MyResource.new
 

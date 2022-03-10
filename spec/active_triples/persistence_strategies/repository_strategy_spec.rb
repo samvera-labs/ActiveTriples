@@ -1,31 +1,18 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 describe ActiveTriples::RepositoryStrategy do
   subject { described_class.new(rdf_source) }
-  let(:source_class) { class MySource; include ActiveTriples::RDFSource; end }
+  let(:source_class) do
+    class MySource
+      include ActiveTriples::RDFSource
+    end
+  end
   let(:rdf_source) { source_class.new }
 
   let(:statement) do
     RDF::Statement.new(rdf_source.to_term, RDF::Vocab::DC.title, 'moomin')
-  end
-
-  it_behaves_like 'a persistence strategy'
-
-
-  describe '#persisted?' do
-    context 'before persist!' do
-      it 'returns false' do
-        expect(subject).not_to be_persisted
-      end
-    end
-
-    context 'after persist!' do
-      it 'returns true' do
-        subject.persist!
-        expect(subject).to be_persisted
-      end
-    end
   end
 
   shared_context 'with repository' do
@@ -38,7 +25,36 @@ describe ActiveTriples::RepositoryStrategy do
     end
   end
 
+  shared_context 'with no repository' do
+    before do
+      source_class.configure(repository: nil)
+    end
+  end
+
+  include_context 'with repository' do
+    it_behaves_like 'a persistence strategy'
+  end
+
+  describe '#persisted?' do
+    context 'before persist!' do
+      include_context 'with repository'
+      it 'returns false' do
+        expect(subject).not_to be_persisted
+      end
+    end
+
+    context 'after persist!' do
+      include_context 'with repository'
+      it 'returns true' do
+        subject.persist!
+        expect(subject).to be_persisted
+      end
+    end
+  end
+
   describe '#destroy' do
+    include_context 'with repository'
+
     shared_examples 'destroy resource' do
       it 'removes the resource from the repository' do
         subject.persist!
@@ -75,17 +91,21 @@ describe ActiveTriples::RepositoryStrategy do
   end
 
   describe '#destroyed?' do
+    include_context 'with repository'
+
     it 'is false' do
       expect(subject).not_to be_destroyed
     end
   end
 
   describe '#persist!' do
+    include_context 'with repository'
+
     it 'writes to #repository' do
       rdf_source << statement
       subject.persist!
       expect(subject.repository.statements)
-          .to contain_exactly *rdf_source.statements
+        .to contain_exactly(*rdf_source.statements)
     end
   end
 
@@ -95,24 +115,32 @@ describe ActiveTriples::RepositoryStrategy do
   end
 
   describe '#reload' do
-    it 'when both repository and object are empty returns true' do
+    include_context 'with repository'
+
+    it 'returns true' do
       expect(subject.reload).to be true
     end
 
-    context 'with unknown content in repo' do
-      include_context 'with repository' do
-        before { repo << statement }
-      end
+    include_context 'with repository' do
+      before { repo << statement }
     end
   end
 
   describe '#repository' do
-    it 'gives a repository when none is configured' do
-      expect(subject.repository).to be_a RDF::Repository
-    end
+    context 'with repository configured' do
+      include_context 'with repository'
 
-    it 'defaults to an ad-hoc in memory RDF::Repository' do
-      expect(subject.repository).to be_ephemeral
+      it 'gives a repository when none is configured' do
+        expect(subject.repository).to be_a RDF::Repository
+      end
+
+      it 'defaults to an ad-hoc in memory RDF::Repository' do
+        expect(subject.repository).to be_ephemeral
+      end
+
+      it 'gets repository' do
+        expect(subject.repository).to eq repo
+      end
     end
 
     context 'with repository configured' do
@@ -125,10 +153,6 @@ describe ActiveTriples::RepositoryStrategy do
           .to receive(:[]).with(:no_repo).and_call_original
         expect { subject.repository }
           .to raise_error ActiveTriples::RepositoryNotFoundError
-      end
-
-      it 'gets repository' do
-        expect(subject.repository).to eq repo
       end
     end
   end

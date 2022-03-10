@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module ActiveTriples
   ##
   # Defines module methods for registering an RDF::Repository for
@@ -18,7 +19,6 @@ module ActiveTriples
   #
   # @see Configurable
   module Repositories
-
     ##
     # Register a repository to be configured by name
     #
@@ -29,8 +29,9 @@ module ActiveTriples
     #
     # @raise [ArgumentError] raised if the repository is not an `RDF::Repository`
     def add_repository(name, repo)
-      raise ArgumentError, "Repositories must be an RDF::Repository" unless 
-        repo.kind_of? RDF::Repository
+      raise ArgumentError, 'Repositories must be an RDF::Repository' unless
+        repo.is_a? RDF::Repository
+
       repositories[name] = repo
     end
     module_function :add_repository
@@ -45,7 +46,7 @@ module ActiveTriples
     module_function :clear_repositories!
 
     ##
-    # @return [Hash<Symbol, Repository>] a hash of currrently registered names 
+    # @return [Hash<Symbol, Repository>] a hash of currrently registered names
     #   and repositories
     def repositories
       @repositories ||= {}
@@ -58,10 +59,10 @@ module ActiveTriples
     #
     # @param [String] rdf_subject
     # @param [Symbol] repository name
-    # 
-    # @return [Boolean] true if the repository contains at least one statement 
+    #
+    # @return [Boolean] true if the repository contains at least one statement
     #   with the given subject term
-    def has_subject?(rdf_subject, repo_name=nil)
+    def has_subject?(rdf_subject, repo_name = nil)
       search_repositories = [repositories[repo_name]] if repo_name
       search_repositories ||= repositories.values
       found = false

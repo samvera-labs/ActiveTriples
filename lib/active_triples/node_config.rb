@@ -28,7 +28,7 @@ module ActiveTriples
     #
     # @yield yields self to the block
     # @yieldparam config [NodeConfig] self
-    def initialize(term, predicate, opts={})
+    def initialize(term, predicate, opts = {})
       self.term = term
       self.predicate = predicate
       self.class_name = opts.delete(:class_name) { nil }
@@ -42,13 +42,16 @@ module ActiveTriples
     # @return [Object] the attribute or option represented by the symbol
     def [](value)
       value = value.to_sym
-      self.respond_to?(value) ? self.public_send(value) : @opts[value]
+      respond_to?(value) ? public_send(value) : @opts[value]
     end
 
     def class_name
       return nil if @class_name.nil?
-      raise "class_name for #{term} is a #{@class_name.class}; must be a class" unless @class_name.kind_of? Class or @class_name.kind_of? String
-      if @class_name.kind_of?(String)
+      unless @class_name.is_a?(Class) || @class_name.is_a?(String)
+        raise "class_name for #{term} is a #{@class_name.class}; must be a class"
+      end
+
+      if @class_name.is_a?(String)
         begin
           new_class = @class_name.constantize
           @class_name = new_class
@@ -61,7 +64,7 @@ module ActiveTriples
     ##
     # @yield yields an index configuration object
     # @yieldparam index [NodeConfig::IndexObject]
-    def with_index(&block)
+    def with_index
       # needed for solrizer integration
       iobj = IndexObject.new
       yield iobj
@@ -74,8 +77,8 @@ module ActiveTriples
     ##
     # @deprecated Use `nil` instead.
     def default_class_name
-        warn 'DEPRECATION: `ActiveTriples::NodeConfig#default_class_name` ' \
-             'will be removed in 1.0. Use `nil`.'
+      warn 'DEPRECATION: `ActiveTriples::NodeConfig#default_class_name` ' \
+           'will be removed in 1.0. Use `nil`.'
       nil
     end
 
