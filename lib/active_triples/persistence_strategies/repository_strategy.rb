@@ -52,7 +52,7 @@ module ActiveTriples
     #
     # @return [Boolean]
     def reload
-      source << repository.query(subject: source)
+      source << repository.query([source, nil, nil])
       @persisted = true unless source.empty?
       true
     end
