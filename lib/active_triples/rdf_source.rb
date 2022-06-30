@@ -122,7 +122,12 @@ module ActiveTriples
         persistence_strategy.parent = args.shift
       end
 
-      persistence_strategy.graph = RDF::Graph.new(*args, &block)
+      graph_params = if args.empty? || args.first.nil?
+                       {}
+                     else
+                       args.shift
+                     end
+      persistence_strategy.graph = RDF::Graph.new(**graph_params, &block)
       reload
 
       # Append type to graph if necessary.

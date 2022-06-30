@@ -19,7 +19,6 @@ module ActiveTriples
     # @param source [RDFSource, RDF::Enumerable] the `RDFSource` (or other
     #   `RDF::Enumerable` to persist with the strategy.
     def initialize(source)
-      binding.pry
       @graph  = source.graph
       @source = source
     end
