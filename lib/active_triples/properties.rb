@@ -66,7 +66,7 @@ module ActiveTriples
         registered_preds   = registered_predicates << RDF.type
         unregistered_preds = []
 
-        query(subject: rdf_subject) do |stmt|
+        query([rdf_subject, nil, nil]) do |stmt|
           unregistered_preds << stmt.predicate unless
             registered_preds.include? stmt.predicate
         end
@@ -123,26 +123,26 @@ module ActiveTriples
       # @param [Hash]  opts for this property, must include a :predicate
       # @yield [index] index sets solr behaviors for the property
       #
-      # @return [Hash{String=>ActiveTriples::NodeConfig}] the full current 
+      # @return [Hash{String=>ActiveTriples::NodeConfig}] the full current
       #   property configuration for the class
       def property(name, opts={}, &block)
-        raise ArgumentError, "#{name} is a keyword and not an acceptable property name." if protected_property_name? name
+        raise ArgumentError, "#{name} is a keyword and not an acceptable property name." if protected_property_name?(name.to_sym)
         reflection = PropertyBuilder.build(self, name, opts, &block)
         Reflection.add_reflection self, name, reflection
       end
 
       ##
-      # Checks potential property names for conflicts with existing class 
-      # instance methods. We avoid setting properties with these names to 
+      # Checks potential property names for conflicts with existing class
+      # instance methods. We avoid setting properties with these names to
       # prevent catastrophic method overwriting.
       #
       # @param [Symblol] name  A potential property name.
-      # @return [Boolean] true if the given name matches an existing instance 
+      # @return [Boolean] true if the given name matches an existing instance
       #   method which is not an ActiveTriples property.
       def protected_property_name?(name)
-        reject = self.instance_methods.map! { |s| s.to_s.gsub(/=$/, '').to_sym }
-        reject -= properties.keys.map { |k| k.to_sym }
-        reject.include? name
+        return false if fields.include?(name)
+        return true if instance_methods.include?(name) || instance_methods.include?("#{name}=".to_sym)
+        false
       end
 
       ##

@@ -17,8 +17,7 @@ module ActiveTriples
   # subgraph. 
   #
   # @see ActiveTriples::Util::ExtendedBoundedDescription
-  class BufferedTransaction < 
-        RDF::Repository::Implementation::SerializedTransaction
+  class BufferedTransaction < ::RDF::Transaction::SerializedTransaction
     # @!attribute snapshot [r]
     #   @return RDF::Dataset
     # @!attribute subject [r]

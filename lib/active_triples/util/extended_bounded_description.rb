@@ -55,7 +55,7 @@ module ActiveTriples
       ancestors = @ancestors.dup
 
       if block_given?
-        statements = source_graph.query(subject: starting_node).each
+        statements = source_graph.query([starting_node, nil, nil]).each
         statements.each_statement { |st| yield st }
         
         ancestors << starting_node

@@ -110,7 +110,7 @@ module ActiveTriples
     # @see RDF::Graph
     # @todo move this logic out to a Builder?
     def initialize(*args, &block)
-      @observers   = Set.new
+      @observers = Set.new
 
       resource_uri = args.shift unless args.first.is_a?(Hash)
       @rdf_subject = get_uri(resource_uri) if resource_uri
@@ -122,7 +122,12 @@ module ActiveTriples
         persistence_strategy.parent = args.shift
       end
 
-      persistence_strategy.graph = RDF::Graph.new(*args, &block)
+      graph_params = if args.empty? || args.first.nil?
+                       {}
+                     else
+                       args.shift
+                     end
+      persistence_strategy.graph = RDF::Graph.new(**graph_params, &block)
       reload
 
       # Append type to graph if necessary.
@@ -641,7 +646,7 @@ module ActiveTriples
     # @param [RDF::Term] new_subject
     # @return [void]
     def rewrite_statement_uris(old_subject, new_subject)
-      graph.query(subject: old_subject).each do |st|
+      graph.query([old_subject, nil, nil]).each do |st|
         graph.delete(st)
 
         st.subject = new_subject
@@ -649,7 +654,7 @@ module ActiveTriples
         graph.insert(st)
       end
 
-      graph.query(object: old_subject).each do |st|
+      graph.query([old_subject, nil, nil]).each do |st|
         graph.delete(st)
 
         st.object = new_subject
