@@ -36,6 +36,21 @@ ruby-2-7:
   extends: .rspec
   stage: test
 
+ruby-3-0:
+  image: ruby:3.0
+  extends: .rspec
+  stage: test
+
+ruby-3-1:
+  image: ruby:3.1
+  extends: .rspec
+  stage: test
+
+ruby-3-2:
+  image: ruby:3.2
+  extends: .rspec
+  stage: test
+
 ruby-latest:
   image: ruby:latest
   extends: .rspec

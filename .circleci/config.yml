@@ -44,6 +44,10 @@ workflows:
     jobs:
       - bundle_lint_test:
           project: active-triples
+          name: ruby3-2
+          ruby_version: 3.2.0
+      - bundle_lint_test:
+          project: active-triples
           name: ruby3-1
           ruby_version: 3.1.1
       - bundle_lint_test:
@@ -64,6 +68,10 @@ workflows:
               only:
                 - main
     jobs:
+      - bundle_lint_test:
+          project: active-triples
+          name: ruby3-2
+          ruby_version: 3.2.0
       - bundle_lint_test:
           project: active-triples
           name: ruby3-1

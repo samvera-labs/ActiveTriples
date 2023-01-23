@@ -470,7 +470,7 @@ describe ActiveTriples::Resource do
   describe '#set_value' do
     it 'should set a value in the graph' do
       subject.set_value(RDF::Vocab::DC.title, 'Comet in Moominland')
-      subject.query(:subject => subject.rdf_subject, :predicate => RDF::Vocab::DC.title).each_statement do |s|
+      subject.query([subject.rdf_subject, nil, RDF::Vocab::DC.title]).each_statement do |s|
         expect(s.object.to_s).to eq 'Comet in Moominland'
       end
     end
@@ -522,14 +522,14 @@ describe ActiveTriples::Resource do
 
     it "should be able to accept a subject" do
       expect{subject.set_value(RDF::URI("http://opaquenamespace.org/jokes"), RDF::Vocab::DC.title, 'Comet in Moominland')}.not_to raise_error
-      expect(subject.query(:subject => RDF::URI("http://opaquenamespace.org/jokes"), :predicate => RDF::Vocab::DC.title).statements.to_a.length).to eq 1
+      expect(subject.query([RDF::URI("http://opaquenamespace.org/jokes"), RDF::Vocab::DC.title, nil]).statements.to_a.length).to eq 1
     end
   end
 
   describe '#[]=' do
     it 'should set a value in the graph' do
       subject[RDF::Vocab::DC.title] = 'Comet in Moominland'
-      subject.query(:subject => subject.rdf_subject, :predicate => RDF::Vocab::DC.title).each_statement do |s|
+      subject.query([subject.rdf_subject, nil, RDF::Vocab::DC.title]).each_statement do |s|
         expect(s.object.to_s).to eq 'Comet in Moominland'
       end
     end
@@ -616,7 +616,7 @@ describe ActiveTriples::Resource do
     end
 
     it 'should be the type in the graph' do
-      subject.query(:subject => subject.rdf_subject, :predicate => RDF.type).statements do |s|
+      subject.query([subject.rdf_subject, nil, RDF.type]).statements do |s|
         expect(s.object).to eq RDF::URI('http://example.org/AnotherClass')
       end
     end
