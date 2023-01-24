@@ -12,9 +12,9 @@ module ActiveTriples
     ##
     # @param item_factory [ItemFactory]
     # @param [Hash] options the configuration options.
-    def initialize(options = {}, item_factory: ItemFactory.new)
+    def initialize(options = {}, item_factory: ItemFactory.new, **options2)
       @item_factory = item_factory
-      @inner_hash   = Hash[options.to_a]
+      @inner_hash   = Hash[options.to_a + options2.to_a]
     end
 
     ##
