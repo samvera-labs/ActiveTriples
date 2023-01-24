@@ -40,6 +40,11 @@ ruby-3-0:
   image: ruby:3.0
   extends: .rspec
   stage: test
+  before_script:
+    - ruby -v
+    - gem install bundler
+    - gem update --system
+    - bundle install --jobs $(nproc)  "${FLAGS[@]}"
 
 ruby-3-1:
   image: ruby:3.1
