@@ -743,7 +743,7 @@ describe ActiveTriples::RDFSource do
 
           it 'has errors' do
             expect { subject.valid? }
-              .to change { subject.errors.messages }
+              .to change { subject.errors.messages.transform_values { |v| v.map(&:to_s) } }
               .from({})
               .to(include(base: ['The underlying graph must be valid']))
           end
