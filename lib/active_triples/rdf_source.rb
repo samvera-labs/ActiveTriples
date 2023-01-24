@@ -124,7 +124,13 @@ module ActiveTriples
         persistence_strategy.parent = args.shift
       end
 
-      persistence_strategy.graph = RDF::Graph.new(*args, &block)
+      merged_args = if args.blank?
+                      {}
+                    else
+                      filtered_args = args.reject(&:nil?)
+                      filtered_args.reduce(:merge)
+                    end
+      persistence_strategy.graph = RDF::Graph.new(**merged_args, &block)
       reload
 
       # Append type to graph if necessary.
