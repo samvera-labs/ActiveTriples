@@ -588,7 +588,8 @@ module ActiveTriples
     #
     #   @param  [RDF::Resource] value
     #   @return [Boolean]
-    #   @since 2.0
+    #
+    # See RDF::Enumerable#term?
     def term?(*args)
       case args.length
       when 0 then to_term.term?
