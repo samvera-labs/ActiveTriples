@@ -92,11 +92,9 @@ module ActiveTriples
     ##
     # @!method to_base
     #   @return (see RDF::Term#to_base)
-    # @!method term?
-    #   @return (see RDF::Term#term?)
     # @!method escape
     #   @return (see RDF::Term#escape)
-    delegate :to_base, :term?, :escape, to: :to_term
+    delegate :to_base, :escape, to: :to_term
 
     ##
     # Initialize an instance of this resource class. Defaults to a
@@ -110,7 +108,7 @@ module ActiveTriples
     # @see RDF::Graph
     # @todo move this logic out to a Builder?
     def initialize(*args, &block)
-      @observers   = Set.new
+      @observers = Set.new
 
       resource_uri = args.shift unless args.first.is_a?(Hash)
       @rdf_subject = get_uri(resource_uri) if resource_uri
@@ -122,7 +120,12 @@ module ActiveTriples
         persistence_strategy.parent = args.shift
       end
 
-      persistence_strategy.graph = RDF::Graph.new(*args, &block)
+      graph_params = if args.empty? || args.first.nil?
+                       {}
+                     else
+                       args.shift
+                     end
+      persistence_strategy.graph = RDF::Graph.new(**graph_params, &block)
       reload
 
       # Append type to graph if necessary.
@@ -398,9 +401,9 @@ module ActiveTriples
     # @yieldparam [ActiveTriples::RDFSource] resource  self
     #
     # @return [ActiveTriples::RDFSource] self
-    def fetch(*args, &_block)
+    def fetch(**args, &_block)
       begin
-        load(rdf_subject, *args)
+        load(rdf_subject, **args)
       rescue => e
         if block_given?
           yield(self)
@@ -575,6 +578,26 @@ module ActiveTriples
       !persisted?
     end
 
+    ##
+    # @overload term?
+    #   Returns `false` indicating this is not an RDF::Statemenet.
+    #   @see RDF::Value#statement?
+    #   @return [Boolean]
+    # @overload term?(value)
+    #   Returns `true` if `self` contains the given RDF subject term.
+    #
+    #   @param  [RDF::Resource] value
+    #   @return [Boolean]
+    #
+    # See RDF::Enumerable#term?
+    def term?(*args)
+      case args.length
+      when 0 then to_term.term?
+      when 1 then args.first && graph.term?(args.first)
+      else raise ArgumentError("wrong number of arguments (given #{args.length}, expected 0 or 1)")
+      end
+    end
+
     def mark_for_destruction
       @marked_for_destruction = true
     end
@@ -641,7 +664,7 @@ module ActiveTriples
     # @param [RDF::Term] new_subject
     # @return [void]
     def rewrite_statement_uris(old_subject, new_subject)
-      graph.query(subject: old_subject).each do |st|
+      graph.query([old_subject, nil, nil]).each do |st|
         graph.delete(st)
 
         st.subject = new_subject
@@ -649,7 +672,7 @@ module ActiveTriples
         graph.insert(st)
       end
 
-      graph.query(object: old_subject).each do |st|
+      graph.query([nil, nil, old_subject]).each do |st|
         graph.delete(st)
 
         st.object = new_subject

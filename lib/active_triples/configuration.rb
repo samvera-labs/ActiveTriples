@@ -11,10 +11,11 @@ module ActiveTriples
 
     ##
     # @param item_factory [ItemFactory]
-    # @param [Hash] options the configuration options.
-    def initialize(item_factory: ItemFactory.new, **options)
+    # @param [Hash] options the configuration options. (Ruby 3+)
+    # @param [Hash] options2 the configuration options. (Ruby 2.x)
+    def initialize(options = {}, item_factory: ItemFactory.new, **options2)
       @item_factory = item_factory
-      @inner_hash   = Hash[options.to_a]
+      @inner_hash   = Hash[options.to_a + options2.to_a]
     end
 
     ##
@@ -26,7 +27,7 @@ module ActiveTriples
     #   result of merging.
     def merge(options)
       options    = options.to_h
-      new_config = self.class.new(**options)
+      new_config = self.class.new(options)
 
       new_config.items.each do |property, item|
         build_configuration_item(property).set item.value

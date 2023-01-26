@@ -5,7 +5,6 @@ gemspec
 gem 'pry-byebug' unless ENV["CI"]
 
 group :test do
-  gem 'rdf-spec', github: 'ruby-rdf/rdf-spec', branch: 'develop'
   gem 'simplecov', require: false
 end
 

@@ -481,7 +481,7 @@ module ActiveTriples
       ##
       # @private
       def objects(&block)
-        solutions = parent.query(subject: rdf_subject, predicate: predicate)
+        solutions = parent.query([rdf_subject, predicate, nil])
         solutions.extend(RDF::Enumerable) unless solutions.respond_to?(:each_object)
         
         solutions.each_object(&block)
