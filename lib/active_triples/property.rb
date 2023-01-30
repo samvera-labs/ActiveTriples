@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module ActiveTriples
   ##
   # A value object to encapsulate what a Property is. Instantiate with a hash of
@@ -17,7 +18,7 @@ module ActiveTriples
     def initialize(options = {}, &block)
       self.name       = options.fetch(:name)
       self.attributes = options.except(:name)
-      self.config     = block 
+      self.config     = block
     end
 
     ##
@@ -57,12 +58,12 @@ module ActiveTriples
     attr_writer   :name, :config
     attr_accessor :attributes
 
-    alias_method :to_h, :attributes
+    alias to_h attributes
 
     ##
-    # Returns the property's configuration values. Will not return #name, which 
+    # Returns the property's configuration values. Will not return #name, which
     # is meant to only be accessible via the accessor.
-    # 
+    #
     # @return [Hash] Configuration values for this property.
     public :to_h
   end

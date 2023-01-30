@@ -1,11 +1,12 @@
 # frozen_string_literal: true
+
 require 'active_support/core_ext/hash'
 
 module ActiveTriples
   ##
-  # Implements property configuration in the style of RDFSource. It does its 
+  # Implements property configuration in the style of RDFSource. It does its
   # work at the class level, and is meant to be extended.
-  # 
+  #
   # Collaborates closely with ActiveTriples::Reflection
   #
   # @example define properties at the class level
@@ -13,7 +14,7 @@ module ActiveTriples
   #    property :title, predicate: RDF::DC.title, class_name: ResourceClass
   #
   # @example using property setters & getters
-  #    resource.property :title, predicate: RDF::DC.title, 
+  #    resource.property :title, predicate: RDF::DC.title,
   #                              class_name: ResourceClass
   #
   #    resource.title = 'Comet in Moominland'
@@ -33,49 +34,48 @@ module ActiveTriples
 
     private
 
-      ##
-      # Returns the properties registered and their configurations.
-      #
-      # @return [ActiveSupport::HashWithIndifferentAccess{String => ActiveTriples::NodeConfig}]
-      def properties
-        _active_triples_config
+    ##
+    # Returns the properties registered and their configurations.
+    #
+    # @return [ActiveSupport::HashWithIndifferentAccess{String => ActiveTriples::NodeConfig}]
+    def properties
+      _active_triples_config
+    end
+
+    ##
+    # Lists fields registered as properties on the object.
+    #
+    # @return [Array<Symbol>] the list of registered properties.
+    def fields
+      properties.keys.map(&:to_sym).reject { |x| x == :type }
+    end
+
+    ##
+    # List of RDF predicates registered as properties on the object.
+    #
+    # @return [Array<RDF::URI>]
+    def registered_predicates
+      properties.values.map(&:predicate)
+    end
+
+    ##
+    # List of RDF predicates used in the Resource's triples, but not
+    # mapped to any property or accessor methods.
+    #
+    # @return [Array<RDF::URI>]
+    def unregistered_predicates
+      registered_preds   = registered_predicates << RDF.type
+      unregistered_preds = []
+
+      solutions = query([rdf_subject, nil, nil])
+      solutions.each do |stmt|
+        unregistered_preds << stmt.predicate unless
+          registered_preds.include? stmt.predicate
       end
 
-      ##
-      # Lists fields registered as properties on the object.
-      #
-      # @return [Array<Symbol>] the list of registered properties.
-      def fields
-        properties.keys.map(&:to_sym).reject{ |x| x == :type }
-      end
+      unregistered_preds
+    end
 
-      ##
-      # List of RDF predicates registered as properties on the object.
-      #
-      # @return [Array<RDF::URI>]
-      def registered_predicates
-        properties.values.map { |config| config.predicate }
-      end
-
-      ##
-      # List of RDF predicates used in the Resource's triples, but not
-      # mapped to any property or accessor methods.
-      #
-      # @return [Array<RDF::URI>]
-      def unregistered_predicates
-        registered_preds   = registered_predicates << RDF.type
-        unregistered_preds = []
-
-        query([rdf_subject, nil, nil]) do |stmt|
-          unregistered_preds << stmt.predicate unless
-            registered_preds.include? stmt.predicate
-        end
-
-        unregistered_preds
-      end
-
-    public
-    
     ##
     # Class methods for classes with `Properties`
     module ClassMethods
@@ -87,10 +87,10 @@ module ActiveTriples
       ##
       # If the property methods are not yet present, generates them.
       #
-      # @return [Module] a module self::GeneratedPropertyMethods which is 
+      # @return [Module] a module self::GeneratedPropertyMethods which is
       #   included in self and defines the property methods
       #
-      # @note this is an alias to #generated_property_methods. Use it when you 
+      # @note this is an alias to #generated_property_methods. Use it when you
       #   intend to initialize, rather than retrieve, the methods for code
       #   readability
       # @see #generated_property_methods
@@ -99,10 +99,10 @@ module ActiveTriples
       end
 
       ##
-      # Gives existing generated property methods. If the property methods are 
+      # Gives existing generated property methods. If the property methods are
       # not yet present, generates them as a new Module and includes it.
       #
-      # @return [Module] a module self::GeneratedPropertyMethods which is 
+      # @return [Module] a module self::GeneratedPropertyMethods which is
       #   included in self and defines the property methods
       #
       # @note use the alias #initialize_generated_modules for clarity of intent
@@ -125,8 +125,9 @@ module ActiveTriples
       #
       # @return [Hash{String=>ActiveTriples::NodeConfig}] the full current
       #   property configuration for the class
-      def property(name, opts={}, &block)
+      def property(name, opts = {}, &block)
         raise ArgumentError, "#{name} is a keyword and not an acceptable property name." if protected_property_name?(name.to_sym)
+
         reflection = PropertyBuilder.build(self, name, opts, &block)
         Reflection.add_reflection self, name, reflection
       end
@@ -155,6 +156,7 @@ module ActiveTriples
       def config_for_term_or_uri(term)
         return properties[term.to_s] unless
           term.is_a?(RDF::Resource) && !term.is_a?(RDFSource)
+
         properties.each_value { |v| return v if v.predicate == term.to_uri }
       end
 

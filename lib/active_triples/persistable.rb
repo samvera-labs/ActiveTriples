@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module ActiveTriples
   ##
   # Bundles the core interfaces used by ActiveTriples persistence strategies
@@ -61,7 +62,7 @@ module ActiveTriples
     def destroy
       persistence_strategy.destroy
     end
-    alias_method :destroy!, :destroy
+    alias destroy! destroy
 
     ##
     # @return [Boolean] true if this item is destroyed
@@ -74,9 +75,10 @@ module ActiveTriples
     # `Persistable`.
     #
     # @return [Boolean]
-    def persist!(opts={})
+    def persist!(opts = {})
       result = false
       return result if opts[:validate] && !valid?
+
       run_callbacks :persist do
         result = persistence_strategy.persist!
       end

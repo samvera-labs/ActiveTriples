@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module ActiveTriples
   ##
   # Defines a generic RDF `Resource` as an `ActiveTriples::Entity`. This
@@ -12,8 +13,9 @@ module ActiveTriples
       end
 
       def property(*)
-        raise "Properties not definable directly on ActiveTriples::Resource, use a subclass" if
+        raise 'Properties not definable directly on ActiveTriples::Resource, use a subclass' if
           self == ActiveTriples::Resource
+
         super
       end
     end

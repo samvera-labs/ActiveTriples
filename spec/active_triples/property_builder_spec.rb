@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 describe ActiveTriples::PropertyBuilder do
@@ -15,7 +16,7 @@ describe ActiveTriples::PropertyBuilder do
       expect(subject.build)
         .to have_attributes(term: name, predicate: predicate)
     end
-    
+
     it 'yields an IndexObject' do
       expect { |b| subject.build(&b) }.to yield_control
     end
